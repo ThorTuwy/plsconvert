@@ -1,7 +1,7 @@
 [project]
 name = "plsconvert"
 version = "0.1.0"
-description = "Add your description here"
+description = "Convert any file to any other."
 readme = "README.md"
 authors = [
     { name = "ThorTuwy", email = "tuwy@tuwy.win" }
@@ -14,6 +14,10 @@ dependencies = [
     "pillow>=11.3.0",
     "scipy>=1.16.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ThorTuwy/plsconvert"
+"Bug Tracker" = "https://github.com/ThorTuwy/plsconvert/issues"
 
 [project.scripts]
 plsconvert = "plsconvert:main"
