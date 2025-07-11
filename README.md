@@ -31,3 +31,5 @@ plsconvert pipe.mp3 funny.pdf
   * **imagemagick**
 * Audio
   * **matplotlib+scipy** (For the spectograms)
+* Config
+  * Native Python Libs + **pyyaml+tomlkit**
