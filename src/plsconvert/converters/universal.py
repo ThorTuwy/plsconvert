@@ -5,7 +5,7 @@ import sys
 import copy
 
 from plsconvert.converters.abstract import fileType
-from plsconvert.converters.compresion import sevenZip, tar
+from plsconvert.converters.compression import sevenZip, tar
 from plsconvert.converters.docs import pandoc, docxFromPdf
 from plsconvert.converters.media import ffmpeg, imagemagick
 from plsconvert.converters.audio import spectrogramMaker
