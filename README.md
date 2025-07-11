@@ -2,8 +2,8 @@
 Convert any file to any other.
 * * *
 ## About The Project
-A simple CLI tool made in python, that wrapers multitude of converters using graphs allowing complex/strange conversions that would normally require serching in the internet multiple comands.
-Also the project has a big focus on been easly expandable allowing contributions for new converters
+**plsconvert** is a CLI tool built in Python. It wraps a multitude of converters using a graph-based approach, enabling complex or unusual conversions that would typically require searching the internet for multiple commands. 
+The project also heavily focuses on being easily expandable, welcoming contributions for new converters.
 
 ## Getting Started
 
