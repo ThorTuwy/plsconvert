@@ -17,3 +17,17 @@ And with that, you can now start converting your owns files to:
 plsconvert pipe.mp3 funny.pdf
 ```
 <img width="493" height="517" alt="image" src="https://github.com/user-attachments/assets/d25a7d55-2a69-4571-b1f2-b36280bb4f1f" />
+
+## Actual converters used
+
+* Compression
+  * **7z**
+  * **Tar+gz+bz2+xz**
+* Docs
+  * **pandoc**
+  * **pdf2docx**
+* Media
+  * **ffmpeg**
+  * **imagemagick**
+* Audio
+  * **matplotlib+scipy** (For the spectograms)
