@@ -9,7 +9,7 @@ from plsconvert.converters.compression import sevenZip, tar
 from plsconvert.converters.docs import pandoc, docxFromPdf
 from plsconvert.converters.media import ffmpeg, imagemagick
 from plsconvert.converters.audio import spectrogramMaker
-
+from plsconvert.converters.configs import configParser
 from halo import Halo
 
 
@@ -51,6 +51,7 @@ class universalConverter:
             imagemagick(),
             sevenZip(),
             tar(),
+            configParser(),
         ]
         self.convertersMap = {}
         for converter in self.converters:
