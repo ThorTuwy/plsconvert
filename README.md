@@ -1,0 +1,19 @@
+# plsconvert
+Convert any file to any other.
+* * *
+## About The Project
+A simple CLI tool made in python, that wrapers multitude of converters using graphs allowing complex/strange conversions that would normally require serching in the internet multiple comands.
+Also the project has a big focus on been easly expandable allowing contributions for new converters
+
+## Getting Started
+
+You can simple installed from Pypi as follow:
+```sh
+pip install plsconvert
+```
+
+And with that, you can now start converting your owns files to:
+```sh
+plsconvert pipe.mp3 funny.pdf
+```
+<img width="493" height="517" alt="image" src="https://github.com/user-attachments/assets/d25a7d55-2a69-4571-b1f2-b36280bb4f1f" />
