@@ -12,7 +12,7 @@ You can simple installed from Pypi as follow:
 >If you dont want all converters, you can install only the ones you want, for that I recommend cheking the [pyproject.toml](pyproject.toml)
 
 ```sh
-pip install plsconvert[all]
+pip install "plsconvert[all]"
 ```
 
 Next, you can check if you have all the converters you want using:
