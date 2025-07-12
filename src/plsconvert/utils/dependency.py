@@ -1,0 +1,21 @@
+import importlib.util
+import subprocess
+from plsconvert.utils.files import runCommand
+
+
+def checkLibsDependencies(dependencies: list[str]) -> bool:
+    for dependency in dependencies:
+        if not importlib.util.find_spec(dependency):
+            return False
+
+    return True
+
+
+def checkToolsDependencies(dependencies: list[str]) -> bool:
+    try:
+        for dependency in dependencies:
+            runCommand([dependency, "--version"])
+    except subprocess.CalledProcessError:
+        return False
+
+    return True

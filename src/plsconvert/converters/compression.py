@@ -1,7 +1,8 @@
 from pathlib import Path
-from plsconvert.converters.abstract import Converter, conversionFromToAdj, runCommand
-
-import tarfile
+from plsconvert.converters.abstract import Converter
+from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.utils.files import runCommand
+from plsconvert.utils.dependency import checkToolsDependencies
 
 
 class tar(Converter):
@@ -14,6 +15,8 @@ class tar(Converter):
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
+        import tarfile
+
         extensionToMode = {
             "tar.gz": ("gzip", "w:gz"),
             "tar.bz2": ("bzip2", "w:bz2"),
@@ -44,6 +47,9 @@ class tar(Converter):
                 str(output),
             ]
             runCommand(command)
+
+    def metDependencies(self) -> bool:
+        return checkToolsDependencies(["gzip", "bzip2", "xz"])
 
 
 class sevenZip(Converter):
@@ -107,3 +113,6 @@ class sevenZip(Converter):
             command = ["7z", "e", "-so", str(input), "|", "7z", "a", "-si", str(output)]
 
         runCommand(command)
+
+    def metDependencies(self) -> bool:
+        return checkToolsDependencies(["7z"])

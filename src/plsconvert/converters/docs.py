@@ -1,8 +1,8 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.converters.abstract import conversionFromToAdj, runCommand
-
-import pdf2docx
+from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.utils.dependency import checkToolsDependencies, checkLibsDependencies
+from plsconvert.utils.files import runCommand
 
 
 class pandoc(Converter):
@@ -31,6 +31,9 @@ class pandoc(Converter):
         command = ["pandoc", str(input), "-o", str(output)]
         runCommand(command)
 
+    def metDependencies(self) -> bool:
+        return checkToolsDependencies(["pandoc"])
+
 
 class docxFromPdf(Converter):
     def adjConverter(self) -> dict[str, list[list[str]]]:
@@ -39,5 +42,10 @@ class docxFromPdf(Converter):
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
+        import pdf2docx
+
         cv = pdf2docx.Converter(str(input))
         cv.convert(output, multi_processing=True)
+
+    def metDependencies(self) -> bool:
+        return checkLibsDependencies(["pdf2docx"])

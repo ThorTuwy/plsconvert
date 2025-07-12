@@ -1,6 +1,8 @@
 from pathlib import Path
-from plsconvert.converters.abstract import Converter, fileType
-from plsconvert.converters.abstract import conversionFromToAdj, runCommand, mergeAdj
+from plsconvert.converters.abstract import Converter
+from plsconvert.utils.graph import conversionFromToAdj, mergeAdj
+from plsconvert.utils.dependency import checkToolsDependencies
+from plsconvert.utils.files import runCommand, fileType
 
 
 class ffmpeg(Converter):
@@ -76,6 +78,9 @@ class ffmpeg(Converter):
             command = ["ffmpeg", "-y", "-i", str(input), "-vframes", "1", str(output)]
 
         runCommand(command)
+
+    def metDependencies(self) -> bool:
+        return checkToolsDependencies(["ffmpeg"])
 
 
 class imagemagick(Converter):
@@ -463,3 +468,6 @@ class imagemagick(Converter):
     ) -> None:
         command = ["magick", str(input), str(output)]
         runCommand(command)
+
+    def metDependencies(self) -> bool:
+        return checkToolsDependencies(["magick"])
