@@ -19,6 +19,9 @@ def dependency_check():
 def cli():
     parser = argparse.ArgumentParser(description="Convert any to any.")
     parser.add_argument(
+        "--version", action="store_true", help="Show package version"
+    )
+    parser.add_argument(
         "--dependencies", action="store_true", help="Show optional dependencies status"
     )
 
@@ -32,6 +35,15 @@ def cli():
     parser.add_argument("--input", "-i", help="Input file path (named argument).")
     parser.add_argument("--output", "-o", help="Output file path (named argument).")
     args = parser.parse_args()
+
+    if args.version:
+        try:
+            import importlib.metadata
+            version = importlib.metadata.version("plsconvert")
+        except Exception:
+            version = "unknown"
+        print(f"plsconvert version: {version}")
+        sys.exit(0)
 
     if args.dependencies:
         dependency_check()
