@@ -1,44 +1,15 @@
 from pathlib import Path
-from collections import deque
 import tempfile
 import sys
 import copy
+from plsconvert.utils.graph import bfs
 
-from plsconvert.converters.abstract import fileType
 from plsconvert.converters.compression import sevenZip, tar
 from plsconvert.converters.docs import pandoc, docxFromPdf
 from plsconvert.converters.media import ffmpeg, imagemagick
 from plsconvert.converters.audio import spectrogramMaker
 from plsconvert.converters.configs import configParser
 from halo import Halo
-
-
-def bfs(start: str, end: str, adj: dict[str, (str, str)]) -> list[str]:
-    visited = []
-    queue = deque([(start, [])])
-
-    while queue:
-        current, path = queue.popleft()
-
-        if current == end:
-            return path
-        visited.append(current)
-
-        # Never do things after audio=>video
-        if (
-            len(path) == 1
-            and fileType(start) == "audio"
-            and fileType(path[0][0]) == "video"
-        ):
-            continue
-
-        for neighbor, converter in adj.get(current, []):
-            if neighbor not in visited:
-                path_copy = path.copy()
-                path_copy.append([neighbor, converter])
-                queue.append((neighbor, path_copy))
-
-    return []
 
 
 class universalConverter:
@@ -65,12 +36,25 @@ class universalConverter:
     def __adj(self) -> dict[str, list[list[str]]]:
         adj = {}
         for converter in self.converters:
+            if not converter.metDependencies():
+                continue
             for key, value in converter.adj().items():
                 if key not in adj:
                     adj[key] = copy.deepcopy(value)
                 else:
                     adj[key].extend(value)
         return adj
+
+    def checkDependencies(self):
+        for converter in self.converters:
+            with Halo(
+                text=f"Dependencies for {converter.name}",
+                spinner="dots",
+            ) as spinner:
+                if converter.metDependencies():
+                    spinner.succeed()
+                else:
+                    spinner.fail()
 
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str

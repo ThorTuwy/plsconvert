@@ -8,11 +8,19 @@ The project also heavily focuses on being easily expandable, welcoming contribut
 ## Getting Started
 
 You can simple installed from Pypi as follow:
+>[!TIP]
+>If you dont want all converters, you can install only the ones you want, for that I recommend cheking the [pyproject.toml](pyproject.toml)
+
 ```sh
-pip install plsconvert
+pip install plsconvert[all]
 ```
 
-And with that, you can now start converting your owns files to:
+Next, you can check if you have all the converters you want using:
+```sh
+plsconvert --dependencies 
+```
+
+And with that, you can now start converting your owns files to 😎:
 ```sh
 plsconvert pipe.mp3 funny.pdf
 ```

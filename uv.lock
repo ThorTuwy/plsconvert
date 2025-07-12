@@ -331,23 +331,39 @@ version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "halo" },
+]
+
+[package.optional-dependencies]
+all = [
     { name = "matplotlib" },
     { name = "pdf2docx" },
-    { name = "pillow" },
     { name = "pyyaml" },
     { name = "scipy" },
     { name = "tomlkit" },
+]
+audio = [
+    { name = "matplotlib" },
+    { name = "scipy" },
+]
+config = [
+    { name = "pyyaml" },
+    { name = "tomlkit" },
+]
+docs = [
+    { name = "pdf2docx" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "halo", specifier = ">=0.0.31" },
-    { name = "matplotlib", specifier = ">=3.10.3" },
-    { name = "pdf2docx", specifier = ">=0.5.8" },
-    { name = "pillow", specifier = ">=11.3.0" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "scipy", specifier = ">=1.16.0" },
-    { name = "tomlkit", specifier = ">=0.13.3" },
+    { name = "matplotlib", marker = "extra == 'audio'", specifier = ">=3.10.3" },
+    { name = "pdf2docx", marker = "extra == 'docs'", specifier = ">=0.5.8" },
+    { name = "plsconvert", extras = ["audio"], marker = "extra == 'all'" },
+    { name = "plsconvert", extras = ["config"], marker = "extra == 'all'" },
+    { name = "plsconvert", extras = ["docs"], marker = "extra == 'all'" },
+    { name = "pyyaml", marker = "extra == 'config'", specifier = ">=6.0.2" },
+    { name = "scipy", marker = "extra == 'audio'", specifier = ">=1.16.0" },
+    { name = "tomlkit", marker = "extra == 'config'", specifier = ">=0.13.3" },
 ]
 
 [[package]]

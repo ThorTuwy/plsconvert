@@ -11,8 +11,16 @@ warnings.filterwarnings("ignore")
 logging.disable(logging.CRITICAL)
 
 
+def dependency_check():
+    self = universalConverter()
+    self.checkDependencies()
+
+
 def cli():
     parser = argparse.ArgumentParser(description="Convert any to any.")
+    parser.add_argument(
+        "--dependencies", action="store_true", help="Show optional dependencies status"
+    )
 
     parser.add_argument(
         "input_path_pos", nargs="?", help="Input file path (positional)."
@@ -24,6 +32,10 @@ def cli():
     parser.add_argument("--input", "-i", help="Input file path (named argument).")
     parser.add_argument("--output", "-o", help="Output file path (named argument).")
     args = parser.parse_args()
+
+    if args.dependencies:
+        dependency_check()
+        sys.exit(0)
 
     input_file = args.input or args.input_path_pos
     output_file = args.output or args.output_path_pos

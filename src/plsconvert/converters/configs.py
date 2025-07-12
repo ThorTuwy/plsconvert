@@ -1,10 +1,9 @@
-from plsconvert.converters.abstract import Converter, conversionFromToAdj
+from plsconvert.converters.abstract import Converter
 from pathlib import Path
 
-import json 
-import tomlkit
-import yaml
-import configparser
+from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.utils.dependency import checkLibsDependencies
+
 
 class configParser(Converter):
     def adjConverter(self) -> dict[str, list[list[str]]]:
@@ -16,6 +15,11 @@ class configParser(Converter):
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
+        import json
+        import tomlkit
+        import yaml
+        import configparser
+
         if input_extension == "json":
             with open(input, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -50,3 +54,6 @@ class configParser(Converter):
                 config[section] = values
             with open(output, "w", encoding="utf-8") as f:
                 config.write(f)
+
+    def metDependencies(self) -> bool:
+        return checkLibsDependencies(["tomlkit", "yaml"])
