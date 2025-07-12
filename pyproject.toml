@@ -1,36 +1,20 @@
 [project]
 name = "plsconvert"
-version = "0.1.2"
+version = "0.1.3"
 description = "Convert any file to any other."
 readme = "README.md"
-authors = [
-    { name = "ThorTuwy", email = "tuwy@tuwy.win" }
-]
+authors = [{ name = "ThorTuwy", email = "tuwy@tuwy.win" }]
 requires-python = ">=3.13"
-dependencies = [
-    "halo>=0.0.31",
-]
+dependencies = ["halo>=0.0.31"]
+
 [project.optional-dependencies]
+docs = ["pdf2docx>=0.5.8"]
 
-docs = [
-    "pdf2docx>=0.5.8",
-]
+audio = ["matplotlib>=3.10.3", "scipy>=1.16.0"]
 
-audio = [
-    "matplotlib>=3.10.3",
-    "scipy>=1.16.0",
-]
+config = ["pyyaml>=6.0.2", "tomlkit>=0.13.3"]
 
-config = [
-    "pyyaml>=6.0.2",
-    "tomlkit>=0.13.3",
-]
-
-all = [
-    "plsconvert[docs]",
-    "plsconvert[audio]",
-    "plsconvert[config]",
-]
+all = ["plsconvert[docs]", "plsconvert[audio]", "plsconvert[config]"]
 
 [project.urls]
 Homepage = "https://github.com/ThorTuwy/plsconvert"
