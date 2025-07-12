@@ -9,7 +9,7 @@ The project also heavily focuses on being easily expandable, welcoming contribut
 
 You can simple installed from Pypi as follow:
 >[!TIP]
->If you only dont want all conversor, you can install only the ones you want, for that I recommend cheking the [pyproject.toml](pyproject.toml)
+>If you dont want all converters, you can install only the ones you want, for that I recommend cheking the [pyproject.toml](pyproject.toml)
 
 ```sh
 pip install plsconvert[all]
