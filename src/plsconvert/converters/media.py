@@ -306,7 +306,6 @@ class imagemagick(Converter):
                 "tm2",
                 "ttc",
                 "ttf",
-                "txt",
                 "uil",
                 "uyvy",
                 "vda",

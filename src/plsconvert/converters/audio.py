@@ -24,3 +24,24 @@ class spectrogramMaker(Converter):
 
     def metDependencies(self) -> bool:
         return checkLibsDependencies(["matplotlib", "scipy"])
+
+class textToSpeech(Converter):
+    def adjConverter(self) -> dict[str, list[list[str]]]:
+        return {
+            "txt": ["mp3"],
+        }
+
+    def convert(
+        self, input: Path, output: Path, input_extension: str, output_extension: str
+    ) -> None:
+        import pyttsx3
+
+        with open(input, 'r', encoding='utf-8') as file:
+            text = file.read()
+
+        engine = pyttsx3.init()
+        engine.save_to_file(text, output.as_posix())
+        engine.runAndWait()
+
+    def metDependencies(self) -> bool:
+        return checkLibsDependencies(["pyttsx3"])
