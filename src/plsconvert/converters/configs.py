@@ -56,4 +56,4 @@ class configParser(Converter):
                 config.write(f)
 
     def metDependencies(self) -> bool:
-        return checkLibsDependencies(["tomlkit", "pyyaml"])
+        return checkLibsDependencies(["tomlkit", "yaml"])
