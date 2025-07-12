@@ -43,6 +43,17 @@ class universalConverter:
                     adj[key].extend(value)
         return adj
 
+    def checkDependencies(self):
+        for converter in self.converters:
+            with Halo(
+                text=f"Dependencies for {converter.name}",
+                spinner="dots",
+            ) as spinner:
+                if converter.metDependencies():
+                    spinner.succeed()
+                else:
+                    spinner.fail()
+
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
