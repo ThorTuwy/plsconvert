@@ -10,6 +10,7 @@ from plsconvert.converters.universal import universalConverter
 warnings.filterwarnings("ignore")
 logging.disable(logging.CRITICAL)
 
+
 def dependency_check():
     self = universalConverter()
     self.checkDependencies()
@@ -17,7 +18,9 @@ def dependency_check():
 
 def cli():
     parser = argparse.ArgumentParser(description="Convert any to any.")
-    parser.add_argument('--dependencies', action='store_true', help='Show optional dependencies status')
+    parser.add_argument(
+        "--dependencies", action="store_true", help="Show optional dependencies status"
+    )
 
     parser.add_argument(
         "input_path_pos", nargs="?", help="Input file path (positional)."

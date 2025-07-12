@@ -1,5 +1,4 @@
 import importlib.util
-import subprocess
 from plsconvert.utils.files import runCommand
 
 
@@ -14,7 +13,7 @@ def checkLibsDependencies(dependencies: list[str]) -> bool:
 def checkToolsDependencies(dependencies: list[str]) -> bool:
     try:
         for dependency in dependencies:
-            runCommand([dependency,"--help"])
+            runCommand([dependency, "--help"])
     except:
         return False
 
