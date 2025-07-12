@@ -36,6 +36,8 @@ class universalConverter:
     def __adj(self) -> dict[str, list[list[str]]]:
         adj = {}
         for converter in self.converters:
+            if not converter.metDependencies():
+                continue
             for key, value in converter.adj().items():
                 if key not in adj:
                     adj[key] = copy.deepcopy(value)
