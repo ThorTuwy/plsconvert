@@ -15,7 +15,7 @@ def checkToolsDependencies(dependencies: list[str]) -> bool:
     try:
         for dependency in dependencies:
             runCommand([dependency,"--help"])
-    except subprocess.CalledProcessError:
+    except:
         return False
 
     return True
