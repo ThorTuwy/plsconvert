@@ -14,7 +14,7 @@ def checkLibsDependencies(dependencies: list[str]) -> bool:
 def checkToolsDependencies(dependencies: list[str]) -> bool:
     try:
         for dependency in dependencies:
-            runCommand([dependency, "--version"])
+            runCommand([dependency,"--help"])
     except subprocess.CalledProcessError:
         return False
 
