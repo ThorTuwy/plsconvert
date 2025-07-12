@@ -9,12 +9,27 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "halo>=0.0.31",
-    "matplotlib>=3.10.3",
+]
+[project.optional-dependencies]
+
+docs = [
     "pdf2docx>=0.5.8",
-    "pillow>=11.3.0",
-    "pyyaml>=6.0.2",
+]
+
+audio = [
+    "matplotlib>=3.10.3",
     "scipy>=1.16.0",
+]
+
+config = [
+    "pyyaml>=6.0.2",
     "tomlkit>=0.13.3",
+]
+
+all = [
+    "plsconvert[docs]",
+    "plsconvert[audio]",
+    "plsconvert[config]",
 ]
 
 [project.urls]
