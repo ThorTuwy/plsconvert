@@ -1,7 +1,7 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
 from plsconvert.utils.graph import conversionFromToAdj, mergeAdj
-from plsconvert.utils.dependency import checkToolsDependencies
+from plsconvert.utils.dependency import checkToolsDependencies,checkLibsDependencies
 from plsconvert.utils.files import runCommand, fileType
 
 
@@ -434,7 +434,6 @@ class imagemagick(Converter):
                 "sfw",
                 "sgi",
                 "sixel",
-                "txt",
                 "stegano",
                 "strimg",
                 "tga",
@@ -470,3 +469,4 @@ class imagemagick(Converter):
 
     def metDependencies(self) -> bool:
         return checkToolsDependencies(["magick"])
+    
