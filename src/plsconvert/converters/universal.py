@@ -7,7 +7,7 @@ from plsconvert.utils.graph import bfs
 from plsconvert.converters.compression import sevenZip, tar
 from plsconvert.converters.docs import pandoc, docxFromPdf
 from plsconvert.converters.media import ffmpeg, imagemagick
-from plsconvert.converters.audio import spectrogramMaker, textToSpeech
+from plsconvert.converters.audio import spectrogramMaker, textToSpeech, audioFromMidi
 from plsconvert.converters.configs import configParser
 from plsconvert.converters.ai import ocr
 from halo import Halo
@@ -25,7 +25,8 @@ class universalConverter:
             tar(),
             configParser(),
             textToSpeech(),
-            ocr()
+            ocr(),
+            audioFromMidi()
         ]
         self.convertersMap = {}
         for converter in self.converters:

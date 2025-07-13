@@ -45,3 +45,19 @@ class textToSpeech(Converter):
 
     def metDependencies(self) -> bool:
         return checkLibsDependencies(["pyttsx3"])
+
+class audioFromMidi(Converter):
+    def adjConverter(self) -> dict[str, list[list[str]]]:
+        return {
+            "mid": ["wav"],
+        }
+
+    def convert(
+        self, input: Path, output: Path, input_extension: str, output_extension: str
+    ) -> None:
+        from midi2audio import FluidSynth
+        FluidSynth().midi_to_audio(str(input), str(output))
+
+
+    def metDependencies(self) -> bool:
+        return checkLibsDependencies(["midi2audio"])

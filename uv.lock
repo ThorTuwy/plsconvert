@@ -298,6 +298,15 @@ wheels = [
 ]
 
 [[package]]
+name = "midi2audio"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/1c/b96b5d797cb622753fef9dd5ac2116ee9f3585727d60212f892fb4bd175e/midi2audio-0.1.1.tar.gz", hash = "sha256:b26590388e1f62753096b075b877e2529ff62faad00c07811ac8111a73e4a78a", size = 4978 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/75/23618a687fc2391192c9d9ec8906a198a3f318f146388d3b96f779826d43/midi2audio-0.1.1-py2.py3-none-any.whl", hash = "sha256:762a2df3806d373f7f89962f22ecc6d3cb49f82ae4212fab560a479cbb6c9c08", size = 8742 },
+]
+
+[[package]]
 name = "mpmath"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -491,6 +500,8 @@ version = "0.1.3"
 source = { editable = "." }
 dependencies = [
     { name = "halo" },
+    { name = "midi2audio" },
+    { name = "pyfluidsynth" },
 ]
 
 [package.optional-dependencies]
@@ -535,6 +546,7 @@ noai = [
 requires-dist = [
     { name = "halo", specifier = ">=0.0.31" },
     { name = "matplotlib", marker = "extra == 'audio'", specifier = ">=3.10.3" },
+    { name = "midi2audio", specifier = ">=0.1.1" },
     { name = "onnxruntime", marker = "extra == 'ai'", specifier = ">=1.22.1" },
     { name = "pdf2docx", marker = "extra == 'docs'", specifier = ">=0.5.8" },
     { name = "pillow", marker = "extra == 'ai'", specifier = ">=11.3.0" },
@@ -545,6 +557,7 @@ requires-dist = [
     { name = "plsconvert", extras = ["config"], marker = "extra == 'noai'" },
     { name = "plsconvert", extras = ["docs"], marker = "extra == 'all'" },
     { name = "plsconvert", extras = ["docs"], marker = "extra == 'noai'" },
+    { name = "pyfluidsynth", specifier = ">=1.3.4" },
     { name = "pyttsx3", marker = "extra == 'audio'", specifier = ">=2.99" },
     { name = "pyyaml", marker = "extra == 'config'", specifier = ">=6.0.2" },
     { name = "rapidocr", marker = "extra == 'ai'", specifier = ">=3.2.0" },
@@ -578,6 +591,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/31/10/c0bf140bee2844e2c0617fdcc8a4e8daf98e71710046b06034e6f1963404/pyclipper-1.3.0.post6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5c9c80b5c46eef38ba3f12dd818dc87f5f2a0853ba914b6f91b133232315f526", size = 962510 },
     { url = "https://files.pythonhosted.org/packages/85/6f/8c6afc49b51b1bf16d5903ecd5aee657cf88f52c83cb5fabf771deeba728/pyclipper-1.3.0.post6-cp313-cp313-win32.whl", hash = "sha256:b15113ec4fc423b58e9ae80aa95cf5a0802f02d8f02a98a46af3d7d66ff0cc0e", size = 98836 },
     { url = "https://files.pythonhosted.org/packages/d5/19/9ff4551b42f2068686c50c0d199072fa67aee57fc5cf86770cacf71efda3/pyclipper-1.3.0.post6-cp313-cp313-win_amd64.whl", hash = "sha256:e5ff68fa770ac654c7974fc78792978796f068bd274e95930c0691c31e192889", size = 109672 },
+]
+
+[[package]]
+name = "pyfluidsynth"
+version = "1.3.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/73/70/fbdd07c84d98c3d4382f4e51bdaa2cf1424a30c41f655ff43c1b2c1d3441/pyfluidsynth-1.3.4.tar.gz", hash = "sha256:ca741c262b72e48963149c73bf8ae80e45c84c23c9bdf803a26ba324cbb2d5b2", size = 30772 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c4/91/4f6b28ac379da306dde66ba6ac170c4a6e7e1506cadc84a9359fe3f237ba/pyfluidsynth-1.3.4-py3-none-any.whl", hash = "sha256:c6990329db7cfb35f5e65d523dd4f0c971d928e70df3a6bceec8864827edf246", size = 22446 },
 ]
 
 [[package]]
