@@ -34,11 +34,16 @@ plsconvert pipe.mp3 funny.pdf
 * Docs
   * **pandoc**
   * **pdf2docx**
+  * **docxFromPdf**
+  * **pandas+openpyxl**
 * Media
   * **ffmpeg**
   * **imagemagick**
 * Audio
   * **matplotlib+scipy** (For the spectograms)
   * **pyttsx3**
+  * **midi2audio**
 * Config
   * Native Python Libs + **pyyaml+tomlkit**
+* AI
+  * **RapidOCR**
