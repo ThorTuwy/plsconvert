@@ -1,6 +1,6 @@
 [project]
 name = "plsconvert"
-version = "0.1.3"
+version = "0.1.4"
 description = "Convert any file to any other."
 readme = "README.md"
 authors = [{ name = "ThorTuwy", email = "tuwy@tuwy.win" }]
