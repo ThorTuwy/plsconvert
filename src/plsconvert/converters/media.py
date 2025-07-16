@@ -356,6 +356,7 @@ class imagemagick(Converter):
                 "cmyk",
                 "cube",
                 "icon",
+                "ico",
                 "cut",
                 "inline",
                 "dcm",
@@ -465,6 +466,9 @@ class imagemagick(Converter):
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         command = ["magick", str(input), str(output)]
+        if output_extension == "ico":
+            command.insert(2, "-define")
+            command.insert(3, 'icon:auto-resize=256,128,96,64,48,32,16')
         runCommand(command)
 
     def metDependencies(self) -> bool:
