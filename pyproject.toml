@@ -7,10 +7,11 @@ authors = [{ name = "ThorTuwy", email = "tuwy@tuwy.win" }]
 requires-python = ">=3.13"
 dependencies = [
     "halo>=0.0.31",
+    "openpyxl>=3.1.5"
 ]
 
 [project.optional-dependencies]
-docs = ["pdf2docx>=0.5.8"]
+docs = ["pdf2docx>=0.5.8","pandas>=2.3.1","openpyxl>=3.1.5"]
 
 audio = ["matplotlib>=3.10.3", "scipy>=1.16.0", "pyttsx3>=2.99", "midi2audio>=0.1.1"]
 
