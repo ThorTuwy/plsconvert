@@ -9,7 +9,9 @@ try:
     import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
     import networkx as nx
+    from netgraph import Graph as NetGraph
     VISUALIZATION_AVAILABLE = True
+        
 except ImportError:
     VISUALIZATION_AVAILABLE = False
 
@@ -226,7 +228,13 @@ class FormatGraphVisualizer:
         
         for node in allNodes:
             category = self.getFormatCategory(node)
-            G.add_node(node, category=category, color=self.getFormatColor(node))
+            # Map category to community number for edge bundling
+            categoryToCommmunity = {
+                'image': 0, 'video': 1, 'audio': 2, 'document': 3, 
+                'config': 4, 'compression': 5, 'other': 6
+            }
+            community = categoryToCommmunity.get(category, 6)
+            G.add_node(node, category=category, color=self.getFormatColor(node), community=community)
         
         # Add edges with converter information (excluding self-loops)
         for source, targets in adj.items():
@@ -268,36 +276,76 @@ class FormatGraphVisualizer:
         # Create the plot
         plt.figure(figsize=figsize)
         
-        # Choose layout
-        if layout == 'spring':
-            pos = nx.spring_layout(G, k=3, iterations=50)
-        elif layout == 'circular':
-            pos = nx.circular_layout(G)
-        elif layout == 'kamada_kawai':
-            # Increase spacing to prevent node overlap
-            pos = nx.kamada_kawai_layout(G, scale=2, pos=None)
-        elif layout == 'hierarchical':
-            pos = nx.multipartite_layout(G, subset_key='category')
+        if layout == 'community':
+            # Use netgraph with edge bundling only for community layout
+            print("Using community layout with edge bundling...")
+            
+            # Get node colors as dictionary
+            nodeColors = {node: G.nodes[node]['color'] for node in G.nodes()}
+            
+            # Create node to community mapping for community layout
+            nodeToCommunity = {node: G.nodes[node]['community'] for node in G.nodes()}
+            
+            # Create netgraph visualization with edge bundling
+            NetGraph(
+                G, 
+                node_layout='community',
+                node_layout_kwargs={'node_to_community': nodeToCommunity},
+                edge_layout='bundled',
+                node_color=nodeColors,
+                node_size=3,
+                node_labels=True,
+                node_label_fontsize=6,
+                edge_color='gray',
+                edge_alpha=0.6,
+                arrows=True,
+                fig=plt.gcf()
+            )
+            
+            # Create manual legend for categories since netgraph doesn't include it automatically
+            legendElements = []
+            for category, color in self.category_colors.items():
+                if any(G.nodes[node]['category'] == category for node in G.nodes()):
+                    legendElements.append(mlines.Line2D([0], [0], marker='o', color='w', 
+                                                    markerfacecolor=color, markersize=10, 
+                                                    label=category.capitalize()))
+            
+            plt.legend(handles=legendElements, loc='upper left', bbox_to_anchor=(1, 1))
+            
         else:
-            pos = nx.spring_layout(G, k=3, iterations=50)
-        
-        # Get node colors
-        node_colors = [G.nodes[node]['color'] for node in G.nodes()]
-        
-        # Draw nodes
-        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=1000, alpha=0.8)
-        
-        # Draw edges
-        nx.draw_networkx_edges(G, pos, edge_color='gray', arrows=True, 
-                              arrowsize=20, arrowstyle='->', alpha=0.6, width=1)
-        
-        # Draw labels
-        nx.draw_networkx_labels(G, pos, font_size=8, font_weight='bold')
-        
-        # Optionally draw converter names on edges
-        if showConverters:
-            edgeLabels = nx.get_edge_attributes(G, 'converter')
-            nx.draw_networkx_edge_labels(G, pos, edgeLabels, font_size=6)
+            # Use traditional NetworkX visualization
+            print("Using traditional NetworkX visualization...")
+            
+            # Choose layout
+            if layout == 'spring':
+                pos = nx.spring_layout(G, k=3, iterations=50)
+            elif layout == 'circular':
+                pos = nx.circular_layout(G)
+            elif layout == 'kamada_kawai':
+                # Increase spacing to prevent node overlap
+                pos = nx.kamada_kawai_layout(G, scale=2, pos=None)
+            elif layout == 'hierarchical':
+                pos = nx.multipartite_layout(G, subset_key='category')
+            else:
+                pos = nx.spring_layout(G, k=3, iterations=50)
+            
+            # Get node colors
+            nodeColors = [G.nodes[node]['color'] for node in G.nodes()]
+            
+            # Draw nodes
+            nx.draw_networkx_nodes(G, pos, node_color=nodeColors, node_size=1000, alpha=0.8)
+            
+            # Draw edges
+            nx.draw_networkx_edges(G, pos, edge_color='gray', arrows=True, 
+                                  arrowsize=20, arrowstyle='->', alpha=0.6, width=1)
+            
+            # Draw labels
+            nx.draw_networkx_labels(G, pos, font_size=8, font_weight='bold')
+            
+            # Optionally draw converter names on edges
+            if showConverters:
+                edgeLabels = nx.get_edge_attributes(G, 'converter')
+                nx.draw_networkx_edge_labels(G, pos, edgeLabels, font_size=6)
         
         # Create legend
         legendElements = []

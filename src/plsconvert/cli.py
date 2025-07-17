@@ -16,7 +16,7 @@ def dependencyCheck():
     self.checkDependencies()
 
 
-def generateGraph(layout: str = 'spring'):
+def generateGraph(layout: str = 'community'):
     """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
     from plsconvert.utils.graph import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
     
@@ -51,6 +51,7 @@ def generateGraph(layout: str = 'spring'):
     except ImportError as e:
         print(f"Missing dependencies: {e}")
         print("Install dependencies with: uv install plsconvert[graph] or if you cloned the repository, run: uv sync --extra dev")
+        print("For the default community layout with edge bundling, also install: uv add netgraph")
     except Exception as e:
         print(f"Error generating graph: {e}")
         
@@ -64,8 +65,8 @@ def cli():
         "--dependencies", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
-        "--graph", "-g", nargs='?', const='spring', 
-        help="Generate plsconvert graph visualization. Optional layout: spring (default), circular, kamada_kawai, hierarchical"
+        "--graph", "-g", nargs='?', const='community', 
+        help="Generate plsconvert graph visualization. Optional layout: community (default, with edge bundling), spring, circular, kamada_kawai, hierarchical"
     )
 
     parser.add_argument(
@@ -94,7 +95,7 @@ def cli():
 
     if args.graph is not None:
         # Validate layout
-        validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical']
+        validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical', 'community']
         if args.graph not in validLayouts:
             print(f"Error: Invalid layout '{args.graph}'. Valid options: {', '.join(validLayouts)}")
             sys.exit(1)

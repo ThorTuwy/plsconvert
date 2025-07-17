@@ -14,7 +14,7 @@ docs = ["pdf2docx>=0.5.8"]
 
 audio = ["matplotlib>=3.10.3", "scipy>=1.16.0", "pyttsx3>=2.99", "midi2audio>=0.1.1"]
 
-graph = ["matplotlib>=3.10.3", "networkx>=3.0"]
+graph = ["matplotlib>=3.10.3", "networkx>=3.0", "netgraph>=4.13.2"]
 
 config = ["pyyaml>=6.0.2", "tomlkit>=0.13.3"]
 
@@ -36,9 +36,3 @@ plsconvert = "plsconvert:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[dependency-groups]
-graph = [
-    "matplotlib>=3.10.3",
-    "networkx>=3.5",
-]
