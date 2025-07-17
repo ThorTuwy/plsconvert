@@ -10,6 +10,7 @@ from plsconvert.converters.media import ffmpeg, imagemagick
 from plsconvert.converters.audio import spectrogramMaker, textToSpeech, audioFromMidi
 from plsconvert.converters.configs import configParser
 from plsconvert.converters.ai import ocr
+from plsconvert.converters.threed import threeDConverter
 from halo import Halo
 
 
@@ -27,7 +28,8 @@ class universalConverter:
             textToSpeech(),
             ocr(),
             audioFromMidi(),
-            csvFromExcel()
+            csvFromExcel(),
+            threeDConverter()
         ]
         self.convertersMap = {}
         for converter in self.converters:
