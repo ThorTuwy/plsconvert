@@ -1,5 +1,4 @@
 import importlib.util
-import os
 import platform
 from pathlib import Path
 from plsconvert.utils.files import runCommand
@@ -32,7 +31,7 @@ def getSevenZipPath() -> str | None:
     try:
         runCommand(["7z", "--help"])
         return "7z"
-    except:
+    except Exception:
         pass
     
     return None
@@ -52,7 +51,7 @@ def checkToolsDependencies(dependencies: list[str]) -> bool:
             try:
                 for dependency in other_deps:
                     runCommand([dependency, "--help"])
-            except:
+            except Exception:
                 return False
         
         return True
@@ -61,7 +60,7 @@ def checkToolsDependencies(dependencies: list[str]) -> bool:
     try:
         for dependency in dependencies:
             runCommand([dependency, "--help"])
-    except:
+    except Exception:
         return False
 
     return True
