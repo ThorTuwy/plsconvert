@@ -57,6 +57,7 @@ class FormatGraphVisualizer:
         self.selected_formats = {
             'image': ['jpg', 'png', 'gif', 'pdf', 'ico'],
             'video': ['mp4', 'mkv', 'mov'],
+            '3d': ['glb', 'gltf', 'obj'],
             'audio': ['mp3', 'wav', 'mid'],
             'document': ['docx', 'doc', 'odt', 'txt', 'html', 'tex', 'pptx', 'csv'],
             'config': ['json', 'toml', 'yaml', 'ini'],
@@ -67,6 +68,7 @@ class FormatGraphVisualizer:
         self.category_colors = {
             'image': '#FF6B6B',      # Red
             'video': '#4ECDC4',      # Teal
+            '3d': '#556B2F',         # Olive
             'audio': '#45B7D1',      # Blue
             'document': '#96CEB4',   # Green
             'config': '#FFEAA7',     # Yellow
@@ -126,8 +128,8 @@ class FormatGraphVisualizer:
             category = self.getFormatCategory(node)
             # Map category to community number for edge bundling
             categoryToCommmunity = {
-                'image': 0, 'video': 1, 'audio': 2, 'document': 3, 
-                'config': 4, 'compression': 5, 'other': 6
+                'image': 0, 'video': 1, '3d': 2, 'audio': 3, 'document': 4, 
+                'config': 5, 'compression': 6, 'other': 7
             }
             community = categoryToCommmunity.get(category, 6)
             G.add_node(node, category=category, color=self.getFormatColor(node), community=community)
