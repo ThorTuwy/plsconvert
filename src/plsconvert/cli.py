@@ -11,18 +11,43 @@ warnings.filterwarnings("ignore")
 logging.disable(logging.CRITICAL)
 
 
-def dependency_check():
+def dependencyCheck():
     self = universalConverter()
     self.checkDependencies()
 
 
-def generate_graph():
-    """Generate plsconvert graph using NetworkX."""
-    from plsconvert.utils.graph import main as graph_main
+def generateGraph(layout: str = 'spring'):
+    """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
+    from plsconvert.utils.graph import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
     
-    print("Generating plsconvert graph with NetworkX...")
+    print(f"Generating plsconvert graph with NetworkX (layout: {layout})...")
     try:
-        graph_main()
+        # Print complete theoretical system information
+        completeAdj, allFormats, allConnections = printAllFormatsAndConnections(theoretical=True)
+        
+        # Filter to selected formats and show analysis
+        print("\nFiltering with selected formats")
+        
+        visualizer = FormatGraphVisualizer()
+        filteredAdj = visualizer.filterSelectedFormats(completeAdj)
+        filteredFormats, filteredConnections = getAllFormats(filteredAdj)
+        
+        print("\nFiltered overview:")
+        print(f"  Filtered formats: {len(filteredFormats)}")
+        print(f"  Filtered connections: {len(filteredConnections)}")
+        
+        # Generate analysis
+        print()
+        analyzeFormatGraph(filteredAdj)
+        
+        # Generate visualization
+        print(f"\nGenerating visualization (layout: {layout})")
+        visualizeFormatGraph(
+            layout=layout,
+            savePath='plsconvert_graph.png',
+            showConverters=False
+        )
+        
     except ImportError as e:
         print(f"Missing dependencies: {e}")
         print("Install dependencies with: uv install plsconvert[graph] or if you cloned the repository, run: uv sync --extra dev")
@@ -39,7 +64,8 @@ def cli():
         "--dependencies", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
-        "--graph", "-g", action="store_true", help="Generate plsconvert graph visualization"
+        "--graph", "-g", nargs='?', const='spring', 
+        help="Generate plsconvert graph visualization. Optional layout: spring (default), circular, kamada_kawai, hierarchical"
     )
 
     parser.add_argument(
@@ -63,11 +89,17 @@ def cli():
         sys.exit(0)
 
     if args.dependencies:
-        dependency_check()
+        dependencyCheck()
         sys.exit(0)
 
-    if args.graph:
-        generate_graph()
+    if args.graph is not None:
+        # Validate layout
+        validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical']
+        if args.graph not in validLayouts:
+            print(f"Error: Invalid layout '{args.graph}'. Valid options: {', '.join(validLayouts)}")
+            sys.exit(1)
+        
+        generateGraph(args.graph)
         sys.exit(0)
 
     input_file = args.input or args.input_path_pos
