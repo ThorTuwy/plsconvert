@@ -1,8 +1,10 @@
 from pathlib import Path
+import tempfile
 from plsconvert.converters.abstract import Converter
 from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand
-from plsconvert.utils.dependency import checkToolsDependencies
+from plsconvert.utils.dependency import checkToolsDependencies, getSevenZipPath
+import platform
 
 
 class tar(Converter):
@@ -100,19 +102,44 @@ class sevenZip(Converter):
             ["generic", "7z", "xz", "bz2", "gz", "tar", "zip", "wim"],
         )
 
+    def _getSevenZipCommand(self) -> str:
+        """Get the correct 7z command path based on platform and availability."""
+        if platform.system() == "Windows":
+            sevenzip_path = getSevenZipPath()
+            if sevenzip_path:
+                return sevenzip_path
+        return "7z"  # Fallback for non-Windows or if available in PATH
+
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
+        sevenzip_cmd = self._getSevenZipCommand()
+        
         if input_extension == "generic":
-            command = ["7z", "a", str(output), str(input)]
+            # File/Folder => Compress
+            command = [sevenzip_cmd, "a", str(output), str(input)]
+            runCommand(command)
         elif output_extension == "generic":
-            # Compress => File/Folder
-            command = ["7z", "e", str(input), f"-o{output.parent}", "-y"]
+            # Compress => File/Folder (decompression)
+            output.mkdir(parents=True, exist_ok=True)
+            command = [sevenzip_cmd, "x", str(input), f"-o{output}", "-y"]
+            runCommand(command)
         else:
-            # Compress => Other compress
-            command = ["7z", "e", "-so", str(input), "|", "7z", "a", "-si", str(output)]
-
-        runCommand(command)
+            # Compress => Other compress (using temporary directory)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                
+                # First: extract input to temporary directory
+                extract_command = [sevenzip_cmd, "x", str(input), f"-o{temp_path}", "-y"]
+                runCommand(extract_command)
+                
+                # Second: compress temporary directory contents to output
+                compress_command = [sevenzip_cmd, "a", str(output)]
+                # Add all files from temp directory
+                for item in temp_path.iterdir():
+                    compress_command.append(str(item))
+                
+                runCommand(compress_command)
 
     def metDependencies(self) -> bool:
         return checkToolsDependencies(["7z"])

@@ -54,7 +54,7 @@ def cli():
         "--version", action="store_true", help="Show package version"
     )
     parser.add_argument(
-        "--dependencies", action="store_true", help="Show optional dependencies status"
+        "--dependencies", "-d", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
         "--graph", nargs='?', const='community', 
@@ -120,8 +120,16 @@ def cli():
         extension_input = input_file.suffix[1:].lower()
 
     if output_file.is_dir():
+        # Existing directory
+        extension_output = "generic"
+    elif str(output_file).endswith(('/', '\\')):
+        # Path ends with directory separator - treat as directory
+        extension_output = "generic"
+    elif not output_file.suffix:
+        # No file extension - likely a directory path
         extension_output = "generic"
     else:
+        # Has file extension - treat as file
         extension_output = "".join(output_file.suffixes)[1:].lower()
 
     converter = universalConverter()
