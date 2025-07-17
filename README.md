@@ -26,6 +26,9 @@ plsconvert pipe.mp3 funny.pdf
 ```
 <img width="493" height="517" alt="image" src="https://github.com/user-attachments/assets/d25a7d55-2a69-4571-b1f2-b36280bb4f1f" />
 
+## Destiled graph visualization
+> todo: add link once the pr has been accepted 
+
 ## Actual converters used
 
 * Compression
