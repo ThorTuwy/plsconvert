@@ -16,6 +16,20 @@ def dependency_check():
     self.checkDependencies()
 
 
+def generate_graph():
+    """Generate plsconvert graph using NetworkX."""
+    from plsconvert.utils.graph import main as graph_main
+    
+    print("Generating plsconvert graph with NetworkX...")
+    try:
+        graph_main()
+    except ImportError as e:
+        print(f"Missing dependencies: {e}")
+        print("Install dependencies with: uv install plsconvert[graph] or if you cloned the repository, run: uv sync --extra dev")
+    except Exception as e:
+        print(f"Error generating graph: {e}")
+        
+
 def cli():
     parser = argparse.ArgumentParser(description="Convert any to any.")
     parser.add_argument(
@@ -23,6 +37,9 @@ def cli():
     )
     parser.add_argument(
         "--dependencies", action="store_true", help="Show optional dependencies status"
+    )
+    parser.add_argument(
+        "--graph", "-g", action="store_true", help="Generate plsconvert graph visualization"
     )
 
     parser.add_argument(
@@ -47,6 +64,10 @@ def cli():
 
     if args.dependencies:
         dependency_check()
+        sys.exit(0)
+
+    if args.graph:
+        generate_graph()
         sys.exit(0)
 
     input_file = args.input or args.input_path_pos
