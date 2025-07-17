@@ -424,7 +424,7 @@ def print_all_formats_and_connections():
     # Get all formats and connections
     all_formats, all_connections = getAllFormats(complete_adj)
     
-    print(f"\nSystem overview:")
+    print("\nSystem overview:")
     print(f"  Total unique formats: {len(all_formats)}")
     print(f"  Total connections: {len(all_connections)}")
     
@@ -434,7 +434,7 @@ def print_all_formats_and_connections():
             converter_counts[converter] = 0
         converter_counts[converter] += 1
     
-    print(f"\nConverter statistics:")
+    print("\nConverter statistics:")
     for converter, count in sorted(converter_counts.items(), key=lambda x: x[1], reverse=True):
         print(f"  {converter}: {count} connections")
     
@@ -474,7 +474,7 @@ def main():
         filtered_adj = visualizer.filter_selected_formats(complete_adj)
         filtered_formats, filtered_connections = getAllFormats(filtered_adj)
         
-        print(f"\nFiltered overview:")
+        print("\nFiltered overview:")
         print(f"  Filtered formats: {len(filtered_formats)}")
         print(f"  Filtered connections: {len(filtered_connections)}")
         
