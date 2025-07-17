@@ -121,19 +121,8 @@ class sevenZip(Converter):
             runCommand(command)
         elif output_extension == "generic":
             # Compress => File/Folder (decompression)
-            # Ensure the output directory exists and use it as extraction destination
-            if output.is_dir() or str(output).endswith(('/', '\\')):
-                # Output is already a directory or path ends with separator
-                extraction_dir = output
-            else:
-                # If output doesn't exist, treat it as a directory path
-                extraction_dir = output
-            
-            # Create the directory if it doesn't exist
-            extraction_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Use 'x' command to preserve directory structure and extract to specified directory
-            command = [sevenzip_cmd, "x", str(input), f"-o{extraction_dir}", "-y"]
+            output.mkdir(parents=True, exist_ok=True)
+            command = [sevenzip_cmd, "x", str(input), f"-o{output}", "-y"]
             runCommand(command)
         else:
             # Compress => Other compress (using temporary directory)
