@@ -1,4 +1,5 @@
 from pathlib import Path
+import tempfile
 from plsconvert.converters.abstract import Converter
 from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand
@@ -117,6 +118,7 @@ class sevenZip(Converter):
         if input_extension == "generic":
             # File/Folder => Compress
             command = [sevenzip_cmd, "a", str(output), str(input)]
+            runCommand(command)
         elif output_extension == "generic":
             # Compress => File/Folder (decompression)
             # Ensure the output directory exists and use it as extraction destination
@@ -132,11 +134,23 @@ class sevenZip(Converter):
             
             # Use 'x' command to preserve directory structure and extract to specified directory
             command = [sevenzip_cmd, "x", str(input), f"-o{extraction_dir}", "-y"]
+            runCommand(command)
         else:
-            # Compress => Other compress
-            command = [sevenzip_cmd, "e", "-so", str(input), "|", sevenzip_cmd, "a", "-si", str(output)]
-
-        runCommand(command)
+            # Compress => Other compress (using temporary directory)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                
+                # First: extract input to temporary directory
+                extract_command = [sevenzip_cmd, "x", str(input), f"-o{temp_path}", "-y"]
+                runCommand(extract_command)
+                
+                # Second: compress temporary directory contents to output
+                compress_command = [sevenzip_cmd, "a", str(output)]
+                # Add all files from temp directory
+                for item in temp_path.iterdir():
+                    compress_command.append(str(item))
+                
+                runCommand(compress_command)
 
     def metDependencies(self) -> bool:
         return checkToolsDependencies(["7z"])
