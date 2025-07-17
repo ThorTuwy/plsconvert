@@ -54,7 +54,7 @@ def cli():
         "--version", action="store_true", help="Show package version"
     )
     parser.add_argument(
-        "--dependencies", action="store_true", help="Show optional dependencies status"
+        "--dependencies", "-d", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
         "--graph", nargs='?', const='community', 
