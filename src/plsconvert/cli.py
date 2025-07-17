@@ -11,10 +11,42 @@ warnings.filterwarnings("ignore")
 logging.disable(logging.CRITICAL)
 
 
-def dependency_check():
+def dependencyCheck():
     self = universalConverter()
     self.checkDependencies()
 
+
+def generateGraph(layout: str = 'community'):
+    """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
+    from plsconvert.graph_representation import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
+    
+    print(f"Generating plsconvert graph with NetworkX (layout: {layout})...")
+    # Print complete theoretical system information
+    completeAdj, allFormats, allConnections = printAllFormatsAndConnections(theoretical=True)
+    
+    # Filter to selected formats and show analysis
+    print("\nFiltering with selected formats")
+    
+    visualizer = FormatGraphVisualizer()
+    filteredAdj = visualizer.filterSelectedFormats(completeAdj)
+    filteredFormats, filteredConnections = getAllFormats(filteredAdj)
+    
+    print("\nFiltered overview:")
+    print(f"  Filtered formats: {len(filteredFormats)}")
+    print(f"  Filtered connections: {len(filteredConnections)}")
+    
+    # Generate analysis
+    print()
+    analyzeFormatGraph(filteredAdj)
+    
+    # Generate visualization
+    print(f"\nGenerating visualization (layout: {layout})")
+    visualizeFormatGraph(
+        layout=layout,
+        savePath='plsconvert_graph.png',
+        showConverters=False
+    )
+        
 
 def cli():
     parser = argparse.ArgumentParser(description="Convert any to any.")
@@ -23,6 +55,10 @@ def cli():
     )
     parser.add_argument(
         "--dependencies", action="store_true", help="Show optional dependencies status"
+    )
+    parser.add_argument(
+        "--graph", nargs='?', const='community', 
+        help="Generate plsconvert graph visualization. Optional layout: community (default, with edge bundling), spring, circular, kamada_kawai, hierarchical"
     )
 
     parser.add_argument(
@@ -46,7 +82,19 @@ def cli():
         sys.exit(0)
 
     if args.dependencies:
-        dependency_check()
+        dependencyCheck()
+        sys.exit(0)
+
+    if args.graph is not None:
+        # Check dependencies
+
+        # Validate layout
+        validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical', 'community']
+        if args.graph not in validLayouts:
+            print(f"Error: Invalid layout '{args.graph}'. Valid options: {', '.join(validLayouts)}")
+            sys.exit(1)
+        
+        generateGraph(args.graph)
         sys.exit(0)
 
     input_file = args.input or args.input_path_pos

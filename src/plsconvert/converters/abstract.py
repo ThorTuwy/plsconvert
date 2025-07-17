@@ -10,9 +10,16 @@ class Converter(ABC):
         return True
 
     def adj(self) -> dict[str, list[list[str]]]:
-        adj = self.adjConverter()
-        for key in adj:
-            adj[key] = [[ext, self.name] for ext in adj[key]]
+        old_adj = self.adjConverter()
+        adj = {}
+        for source in old_adj:
+            new_targets = []
+            for target in old_adj[source]:
+                if target not in adj:
+                    adj[target] = []
+                if source != target:  # Avoid self-loops
+                    new_targets.append([target, self.name])
+            adj[source] = new_targets
         return adj
 
     @abstractmethod

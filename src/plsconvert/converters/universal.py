@@ -33,21 +33,22 @@ class universalConverter:
         for converter in self.converters:
             self.convertersMap[converter.name] = converter
 
-        self.adj = self.__adj()
+        self.adj = self.getAdjacency(theoretical=False)
 
     def __converter_factory(self, converter: str):
         return self.convertersMap.get(converter)
 
-    def __adj(self) -> dict[str, list[list[str]]]:
+    def getAdjacency(self, theoretical: bool = False) -> dict[str, list[list[str]]]:
+        """Get adjacency dictionary. If theoretical=True, returns complete graph without dependency checks."""
         adj = {}
         for converter in self.converters:
-            if not converter.metDependencies():
+            if not (theoretical or converter.metDependencies()):
                 continue
-            for key, value in converter.adj().items():
-                if key not in adj:
-                    adj[key] = copy.deepcopy(value)
+            for source, conversions in converter.adj().items():
+                if source not in adj:
+                    adj[source] = copy.deepcopy(conversions)
                 else:
-                    adj[key].extend(value)
+                    adj[source].extend(conversions)
         return adj
 
     def checkDependencies(self):

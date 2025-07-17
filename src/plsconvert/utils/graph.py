@@ -1,24 +1,26 @@
 import copy
 from collections import deque
+from typing import Dict, List, Tuple, Optional, Any, Deque
 from plsconvert.utils.files import fileType
 
 
-def conversionFromToAdj(
-    conversion_from: list[str], conversion_to: list[str]
-) -> dict[str, (str, str)]:
-    """
-    Create a dictionary mapping from conversion_from to conversion_to.
-    """
 
+
+def conversionFromToAdj(
+    conversionFrom: List[str], conversionTo: List[str]
+) -> Dict[str, List[str]]:
+    """
+    Create a dictionary mapping from conversionFrom to conversionTo.
+    """
     adj = {}
 
-    for ext in conversion_from:
-        adj[ext] = conversion_to
+    for source in conversionFrom:
+        adj[source] = conversionTo
 
     return adj
 
 
-def mergeAdj(adj1, adj2):
+def mergeAdj(adj1: Dict[str, List[str]], adj2: Dict[str, List[str]]) -> Dict[str, List[str]]:
     """
     Merge two adjacency dictionaries.
     """
@@ -31,9 +33,9 @@ def mergeAdj(adj1, adj2):
     return adj1
 
 
-def bfs(start: str, end: str, adj: dict[str, (str, str)]) -> list[str]:
+def bfs(start: str, end: str, adj: Dict[str, List[List[str]]]) -> List[List[str]]:
     visited = []
-    queue = deque([(start, [])])
+    queue: Deque[Tuple[str, List[List[str]]]] = deque([(start, [])])
 
     while queue:
         current, path = queue.popleft()
@@ -57,3 +59,4 @@ def bfs(start: str, end: str, adj: dict[str, (str, str)]) -> list[str]:
                 queue.append((neighbor, path_copy))
 
     return []
+    
