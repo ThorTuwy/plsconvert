@@ -33,42 +33,23 @@ class universalConverter:
         for converter in self.converters:
             self.convertersMap[converter.name] = converter
 
-        self.adj = self.__practical_adj()
+        self.adj = self.getAdjacency(theoretical=False)
 
     def __converter_factory(self, converter: str):
         return self.convertersMap.get(converter)
 
-    def __practical_adj(self) -> dict[str, list[list[str]]]:
-        """Build adjacency dictionary with only available converters (dependencies met)"""
-        adj = {}
-        for converter in self.converters:
-            if not converter.metDependencies():
-                continue
-            for key, value in converter.adj().items():
-                if key not in adj:
-                    adj[key] = copy.deepcopy(value)
-                else:
-                    adj[key].extend(value)
-        return adj
-    
-    def __theoretical_adj(self) -> dict[str, list[list[str]]]:
-        """Build adjacency dictionary with all converters (theoretical complete system)"""
-        adj = {}
-        for converter in self.converters:
-            # No dependency check - include all converters
-            for key, value in converter.adj().items():
-                if key not in adj:
-                    adj[key] = copy.deepcopy(value)
-                else:
-                    adj[key].extend(value)
-        return adj
-    
     def getAdjacency(self, theoretical: bool = False) -> dict[str, list[list[str]]]:
         """Get adjacency dictionary. If theoretical=True, returns complete graph without dependency checks."""
-        if theoretical:
-            return self.__theoretical_adj()
-        else:
-            return self.__practical_adj()
+        adj = {}
+        for converter in self.converters:
+            if not (theoretical or converter.metDependencies()):
+                continue
+            for source, conversions in converter.adj().items():
+                if source not in adj:
+                    adj[source] = copy.deepcopy(conversions)
+                else:
+                    adj[source].extend(conversions)
+        return adj
 
     def checkDependencies(self):
         for converter in self.converters:

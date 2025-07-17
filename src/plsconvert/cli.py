@@ -18,42 +18,34 @@ def dependencyCheck():
 
 def generateGraph(layout: str = 'community'):
     """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
-    from plsconvert.utils.graph import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
+    from plsconvert.graph_representation import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
     
     print(f"Generating plsconvert graph with NetworkX (layout: {layout})...")
-    try:
-        # Print complete theoretical system information
-        completeAdj, allFormats, allConnections = printAllFormatsAndConnections(theoretical=True)
-        
-        # Filter to selected formats and show analysis
-        print("\nFiltering with selected formats")
-        
-        visualizer = FormatGraphVisualizer()
-        filteredAdj = visualizer.filterSelectedFormats(completeAdj)
-        filteredFormats, filteredConnections = getAllFormats(filteredAdj)
-        
-        print("\nFiltered overview:")
-        print(f"  Filtered formats: {len(filteredFormats)}")
-        print(f"  Filtered connections: {len(filteredConnections)}")
-        
-        # Generate analysis
-        print()
-        analyzeFormatGraph(filteredAdj)
-        
-        # Generate visualization
-        print(f"\nGenerating visualization (layout: {layout})")
-        visualizeFormatGraph(
-            layout=layout,
-            savePath='plsconvert_graph.png',
-            showConverters=False
-        )
-        
-    except ImportError as e:
-        print(f"Missing dependencies: {e}")
-        print("Install dependencies with: uv install plsconvert[graph] or if you cloned the repository, run: uv sync --extra dev")
-        print("For the default community layout with edge bundling, also install: uv add netgraph")
-    except Exception as e:
-        print(f"Error generating graph: {e}")
+    # Print complete theoretical system information
+    completeAdj, allFormats, allConnections = printAllFormatsAndConnections(theoretical=True)
+    
+    # Filter to selected formats and show analysis
+    print("\nFiltering with selected formats")
+    
+    visualizer = FormatGraphVisualizer()
+    filteredAdj = visualizer.filterSelectedFormats(completeAdj)
+    filteredFormats, filteredConnections = getAllFormats(filteredAdj)
+    
+    print("\nFiltered overview:")
+    print(f"  Filtered formats: {len(filteredFormats)}")
+    print(f"  Filtered connections: {len(filteredConnections)}")
+    
+    # Generate analysis
+    print()
+    analyzeFormatGraph(filteredAdj)
+    
+    # Generate visualization
+    print(f"\nGenerating visualization (layout: {layout})")
+    visualizeFormatGraph(
+        layout=layout,
+        savePath='plsconvert_graph.png',
+        showConverters=False
+    )
         
 
 def cli():
@@ -65,7 +57,7 @@ def cli():
         "--dependencies", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
-        "--graph", "-g", nargs='?', const='community', 
+        "--graph", nargs='?', const='community', 
         help="Generate plsconvert graph visualization. Optional layout: community (default, with edge bundling), spring, circular, kamada_kawai, hierarchical"
     )
 
@@ -94,6 +86,8 @@ def cli():
         sys.exit(0)
 
     if args.graph is not None:
+        # Check dependencies
+
         # Validate layout
         validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical', 'community']
         if args.graph not in validLayouts:
