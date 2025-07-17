@@ -20,17 +20,23 @@ def conversionFromToAdj(
     return adj
 
 
-def mergeAdj(adj1: Dict[str, List[str]], adj2: Dict[str, List[str]]) -> Dict[str, List[str]]:
+def mergeAdj(*adjs: Dict[str, List[str]]) -> Dict[str, List[str]]:
     """
-    Merge two adjacency dictionaries.
+    Merge any number of adjacency dictionaries.
     """
-    for key, value in adj2.items():
-        if key not in adj1:
-            adj1[key] = copy.deepcopy(value)
-        else:
-            adj1[key].extend(value)
-
-    return adj1
+    if not adjs:
+        return {}
+    
+    result = copy.deepcopy(adjs[0])
+    
+    for adj in adjs[1:]:
+        for key, value in adj.items():
+            if key not in result:
+                result[key] = copy.deepcopy(value)
+            else:
+                result[key].extend(value)
+    
+    return result
 
 
 def bfs(start: str, end: str, adj: Dict[str, List[List[str]]]) -> List[List[str]]:
