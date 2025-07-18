@@ -347,7 +347,6 @@ class imagemagick(Converter):
                 "bgr",
                 "bie",
                 "bmp",
-                "braille",
                 "cals",
                 "xc",
                 "cin",

@@ -8,6 +8,7 @@ from plsconvert.converters.compression import sevenZip, tar
 from plsconvert.converters.docs import pandoc, docxFromPdf,csvFromExcel
 from plsconvert.converters.media import ffmpeg, imagemagick
 from plsconvert.converters.audio import spectrogramMaker, textToSpeech, audioFromMidi
+from plsconvert.converters.braille import brailleConverter
 from plsconvert.converters.configs import configParser
 from plsconvert.converters.ai import ocr
 from halo import Halo
@@ -27,7 +28,8 @@ class universalConverter:
             textToSpeech(),
             ocr(),
             audioFromMidi(),
-            csvFromExcel()
+            csvFromExcel(),
+            brailleConverter()
         ]
         self.convertersMap = {}
         for converter in self.converters:
