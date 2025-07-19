@@ -2,7 +2,7 @@ from pathlib import Path
 from plsconvert.converters.abstract import Converter
 from plsconvert.converters.registry import register_converter
 from plsconvert.utils.graph import ConversionAdj
-from plsconvert.utils.graph import conversionFromToAdj, mergeAdj
+from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand, fileType
 from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
 
