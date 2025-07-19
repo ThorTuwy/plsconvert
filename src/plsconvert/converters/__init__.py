@@ -5,6 +5,7 @@ This package contains all the converter implementations and the registry system.
 """
 
 # Import all converter modules to ensure they are registered
+# ruff: noqa: F401
 from . import abstract  
 from . import registry
 from . import audio
