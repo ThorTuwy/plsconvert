@@ -1,12 +1,27 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.utils.graph import conversionFromToAdj, mergeAdj
-from plsconvert.utils.dependency import checkToolsDependencies,checkLibsDependencies
+from plsconvert.converters.registry import register_converter
+from plsconvert.utils.graph import ConversionAdj
+from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand, fileType
+from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
 
 
+@register_converter
 class ffmpeg(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    Video and audio converter using ffmpeg.
+    """
+
+    @property
+    def name(self) -> str:
+        return "FFmpeg Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Tool("ffmpeg")])
+
+    def adjConverter(self) -> ConversionAdj:
         adjGeneral = conversionFromToAdj(
             [
                 "mp4",
@@ -65,7 +80,7 @@ class ffmpeg(Converter):
             ],
         )
 
-        return mergeAdj(adjGeneral, adjPictures)
+        return adjGeneral + adjPictures
 
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
@@ -79,12 +94,22 @@ class ffmpeg(Converter):
 
         runCommand(command)
 
-    def metDependencies(self) -> bool:
-        return checkToolsDependencies(["ffmpeg"])
 
-
+@register_converter
 class imagemagick(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    Image converter using imagemagick.
+    """
+
+    @property
+    def name(self) -> str:
+        return "ImageMagick Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Tool("magick")])
+
+    def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(
             [
                 "3fr",
@@ -347,7 +372,6 @@ class imagemagick(Converter):
                 "bgr",
                 "bie",
                 "bmp",
-                "braille",
                 "cals",
                 "xc",
                 "cin",
@@ -470,7 +494,3 @@ class imagemagick(Converter):
             command.insert(2, "-define")
             command.insert(3, 'icon:auto-resize=256,128,96,64,48,32,16')
         runCommand(command)
-
-    def metDependencies(self) -> bool:
-        return checkToolsDependencies(["magick"])
-    

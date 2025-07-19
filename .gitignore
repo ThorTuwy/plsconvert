@@ -11,3 +11,6 @@ wheels/
 
 # Test
 test/
+
+# plsconvert
+local_data/

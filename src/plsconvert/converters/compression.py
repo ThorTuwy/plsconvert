@@ -1,14 +1,30 @@
 from pathlib import Path
 import tempfile
 from plsconvert.converters.abstract import Converter
+from plsconvert.converters.registry import register_converter
+from plsconvert.utils.graph import ConversionAdj
 from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand
-from plsconvert.utils.dependency import checkToolsDependencies, getSevenZipPath
+from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool, LibDependency as Lib
+from plsconvert.utils.dependency import getSevenZipPath
 import platform
 
 
+@register_converter
 class tar(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    Tar converter.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Tar Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Lib("gzip"), Tool("bzip2"), Tool("xz")])
+
+    def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(
             ["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"],
             ["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"],
@@ -50,12 +66,22 @@ class tar(Converter):
             ]
             runCommand(command)
 
-    def metDependencies(self) -> bool:
-        return checkToolsDependencies(["gzip", "bzip2", "xz"])
 
-
+@register_converter
 class sevenZip(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    7z converter.
+    """
+    
+    @property
+    def name(self) -> str:
+        return "7z Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Tool("7z")])
+
+    def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(
             [
                 "generic",
@@ -141,5 +167,3 @@ class sevenZip(Converter):
                 
                 runCommand(compress_command)
 
-    def metDependencies(self) -> bool:
-        return checkToolsDependencies(["7z"])

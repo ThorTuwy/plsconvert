@@ -2,49 +2,26 @@ from pathlib import Path
 import tempfile
 import sys
 import copy
-from plsconvert.utils.graph import bfs
-
-from plsconvert.converters.compression import sevenZip, tar
-from plsconvert.converters.docs import pandoc, docxFromPdf,csvFromExcel
-from plsconvert.converters.media import ffmpeg, imagemagick
-from plsconvert.converters.audio import spectrogramMaker, textToSpeech, audioFromMidi
-from plsconvert.converters.configs import configParser
-from plsconvert.converters.ai import ocr
-from plsconvert.converters.threed import threeDConverter
+from plsconvert.utils.graph import bfs  
+from plsconvert.converters.abstract import Converter
+from plsconvert.utils.graph import ConversionAdj
+from plsconvert.converters.registry import ConverterRegistry
 from halo import Halo
 
-
 class universalConverter:
-    def __init__(self):
-        self.converters = [
-            spectrogramMaker(),
-            docxFromPdf(),
-            ffmpeg(),
-            pandoc(),
-            imagemagick(),
-            sevenZip(),
-            tar(),
-            configParser(),
-            textToSpeech(),
-            ocr(),
-            audioFromMidi(),
-            csvFromExcel(),
-            threeDConverter()
-        ]
-        self.convertersMap = {}
-        for converter in self.converters:
-            self.convertersMap[converter.name] = converter
+    """Universal converter that uses the centralized registry to access all available converters."""
 
+    def __init__(self):
+        """Initialize the universal converter with all registered converters."""
+        self.converters = [converter_class() for converter_class in ConverterRegistry.get_all_converters()]
+        self.convertersMap: dict[str, Converter] = {converter.name: converter for converter in self.converters}
         self.adj = self.getAdjacency(theoretical=False)
 
-    def __converter_factory(self, converter: str):
-        return self.convertersMap.get(converter)
-
-    def getAdjacency(self, theoretical: bool = False) -> dict[str, list[list[str]]]:
+    def getAdjacency(self, theoretical: bool = False) -> ConversionAdj:
         """Get adjacency dictionary. If theoretical=True, returns complete graph without dependency checks."""
-        adj = {}
+        adj: ConversionAdj = ConversionAdj()
         for converter in self.converters:
-            if not (theoretical or converter.metDependencies()):
+            if not (theoretical or converter.dependencies.check):
                 continue
             for source, conversions in converter.adj().items():
                 if source not in adj:
@@ -54,12 +31,18 @@ class universalConverter:
         return adj
 
     def checkDependencies(self):
+        """Check dependencies for all registered converters."""
         for converter in self.converters:
+            if converter.dependencies.check:
+                text=f"Dependencies for {converter}"
+            else:
+                text=f"Dependencies for {converter}. Check your dependencies: {converter.dependencies.missing()}"
+
             with Halo(
-                text=f"Dependencies for {converter.name}",
+                text=text,
                 spinner="dots",
             ) as spinner:
-                if converter.metDependencies():
+                if converter.dependencies.check:
                     spinner.succeed()
                 else:
                     spinner.fail()
@@ -67,6 +50,7 @@ class universalConverter:
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
+        """Convert a file from one format to another using the best available conversion path."""
         path = bfs(input_extension, output_extension, self.adj)
 
         if not path:
@@ -83,27 +67,25 @@ class universalConverter:
             with tempfile.TemporaryDirectory() as temp_dir:
                 for conversion in path[:-1]:
                     with Halo(
-                        text=f"Converting from {input_extension} to {conversion[0]} with {conversion[1]}",
+                        text=f"Converting from {input_extension} to {conversion.format} with {conversion.converter}",
                         spinner="dots",
                     ) as spinner:
-                        converter = self.__converter_factory(conversion[1])
                         temp_output = (
-                            Path(temp_dir) / f"{output.stem + '.' + conversion[0]}"
+                            Path(temp_dir) / f"{output.stem + '.' + conversion.format}"
                         )
-                        converter.convert(
-                            input, temp_output, input_extension, conversion[0]
+                        conversion.converter.convert(
+                            input, temp_output, input_extension, conversion.format
                         )
                         input = temp_output
-                        input_extension = conversion[0]
+                        input_extension = conversion.format
 
                         spinner.succeed()
 
                 with Halo(
-                    text=f"Final conversion {input_extension} to {output_extension} with {path[-1][1]}",
+                    text=f"Final conversion {input_extension} to {output_extension} with {path[-1].converter}",
                     spinner="dots",
                 ) as spinner:
-                    converter = self.__converter_factory(path[-1][1])
-                    converter.convert(input, output, input_extension, output_extension)
+                    path[-1].converter.convert(input, output, input_extension, output_extension)
                     spinner.succeed()
 
         except FileNotFoundError as e:

@@ -18,7 +18,7 @@ def dependencyCheck():
 
 def generateGraph(layout: str = 'community'):
     """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
-    from plsconvert.graph_representation import visualizeFormatGraph, printAllFormatsAndConnections, analyzeFormatGraph, FormatGraphVisualizer, getAllFormats
+    from plsconvert.graph_representation import printAllFormatsAndConnections, FormatGraphVisualizer, getAllFormats
     
     print(f"Generating plsconvert graph with NetworkX (layout: {layout})...")
     # Print complete theoretical system information
@@ -27,25 +27,26 @@ def generateGraph(layout: str = 'community'):
     # Filter to selected formats and show analysis
     print("\nFiltering with selected formats")
     
-    visualizer = FormatGraphVisualizer()
-    filteredAdj = visualizer.filterSelectedFormats(completeAdj)
+    graphVisualizer = FormatGraphVisualizer()
+    filteredAdj = graphVisualizer.filterSelectedFormats(completeAdj)
     filteredFormats, filteredConnections = getAllFormats(filteredAdj)
     
     print("\nFiltered overview:")
     print(f"  Filtered formats: {len(filteredFormats)}")
     print(f"  Filtered connections: {len(filteredConnections)}")
     
-    # Generate analysis
-    print()
-    analyzeFormatGraph(filteredAdj)
-    
     # Generate visualization
     print(f"\nGenerating visualization (layout: {layout})")
-    visualizeFormatGraph(
+    graphVisualizer.visualizeGraph(
         layout=layout,
         savePath='plsconvert_graph.png',
         showConverters=False
     )
+
+def generateGraphInfo():
+    """Generate graph analysis and save to local_data directory."""
+    from plsconvert.graph_analysis import save_analysis_to_local
+    save_analysis_to_local()
         
 
 def cli():
@@ -57,17 +58,15 @@ def cli():
         "--dependencies", "-d", action="store_true", help="Show optional dependencies status"
     )
     parser.add_argument(
-        "--graph", nargs='?', const='community', 
-        help="Generate plsconvert graph visualization. Optional layout: community (default, with edge bundling), spring, circular, kamada_kawai, hierarchical"
+        "--graph", nargs='?', const='layout:community', 
+        help="Graph operations. Options: 'info' (save JSON to local_data/) or 'layout:TYPE' where TYPE is spring, circular, kamada_kawai, hierarchical, community (default: layout:community)"
     )
-
     parser.add_argument(
         "input_path_pos", nargs="?", help="Input file path (positional)."
     )
     parser.add_argument(
         "output_path_pos", nargs="?", help="Output file path (positional)."
     )
-
     parser.add_argument("--input", "-i", help="Input file path (named argument).")
     parser.add_argument("--output", "-o", help="Output file path (named argument).")
     args = parser.parse_args()
@@ -85,17 +84,29 @@ def cli():
         dependencyCheck()
         sys.exit(0)
 
+    # Handle --graph flag
     if args.graph is not None:
-        # Check dependencies
-
-        # Validate layout
-        validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical', 'community']
-        if args.graph not in validLayouts:
-            print(f"Error: Invalid layout '{args.graph}'. Valid options: {', '.join(validLayouts)}")
+        if args.graph == 'info':
+            generateGraphInfo()
+            sys.exit(0)
+        elif args.graph.startswith('layout:'):
+            layout = args.graph.split(':', 1)[1] if ':' in args.graph else 'community'
+            # Validate layout
+            validLayouts = ['spring', 'circular', 'kamada_kawai', 'hierarchical', 'community']
+            if layout not in validLayouts:
+                print(f"Error: Invalid layout '{layout}'. Valid options: {', '.join(validLayouts)}")
+                sys.exit(1)
+            generateGraph(layout)
+            sys.exit(0)
+        else:
+            print("Error: Invalid graph option. Use 'info' or 'layout:TYPE'.")
+            print("Examples:")
+            print("  plsconvert --graph info")
+            print("  plsconvert --graph layout:community")
+            print("  plsconvert --graph layout:spring")
             sys.exit(1)
-        
-        generateGraph(args.graph)
-        sys.exit(0)
+
+
 
     input_file = args.input or args.input_path_pos
     output_file = args.output or args.output_path_pos
