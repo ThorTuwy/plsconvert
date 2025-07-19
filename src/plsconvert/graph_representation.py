@@ -61,7 +61,7 @@ class FormatGraphVisualizer:
             'video': ['mp4', 'mkv', 'mov'],
             '3d': ['glb', 'gltf', 'obj'],
             'audio': ['mp3', 'wav', 'mid'],
-            'document': ['docx', 'doc', 'odt', 'txt', 'html', 'tex', 'pptx', 'csv', 'braille'],
+            'document': ['docx', 'doc', 'odt', 'txt', 'html', 'tex', 'pptx', 'csv', 'braille', 'md'],
             'config': ['json', 'toml', 'yaml', 'ini'],
             'compression': ['zip', '7z', 'tar', 'rar'],
             'other': []
