@@ -231,6 +231,3 @@ class brailleConverter(Converter):
         
         with open(output, 'w', encoding='utf-8') as file:
             file.write(converted_content)
-
-    def metDependencies(self) -> bool:
-        return True
