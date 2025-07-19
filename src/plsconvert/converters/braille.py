@@ -204,8 +204,6 @@ class brailleConverter(Converter):
                     
                     if is_raised:
                         svg_content += f'<circle cx="{dot_x}" cy="{dot_y}" r="{dot_size//2}" class="dot-filled"/>\n'
-                    else:
-                        svg_content += f'<circle cx="{dot_x}" cy="{dot_y}" r="{dot_size//2}" class="dot-empty"/>\n'
         
         svg_content += '</svg>'
         return svg_content
