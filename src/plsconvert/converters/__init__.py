@@ -15,6 +15,7 @@ from . import compression
 from . import ai
 from . import braille
 from . import configs
+from . import threed
 from . import universal
 
 # Export the main classes

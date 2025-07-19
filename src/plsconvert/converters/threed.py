@@ -1,31 +1,41 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.utils.dependency import checkLibsDependencies
-from plsconvert.utils.graph import conversionFromToAdj, mergeAdj
+from plsconvert.utils.graph import ConversionAdj, conversionFromToAdj
+from plsconvert.converters.registry import register_converter
+from plsconvert.utils.dependency import Dependencies, LibDependency as Lib
 
-
+@register_converter
 class threeDConverter(Converter):
-    def adjConverter(self) -> dict[str, list[str]]:
+    """
+    Converter for 3D models.
+    """
+
+    @property
+    def name(self) -> str:
+        return "3D Converter"
+    
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Lib("trimesh"), Lib("moderngl"), Lib("pyrr"), Lib("PIL"), Lib("imageio"), Lib("imageio_ffmpeg"), Lib("pygltflib")])
+
+    def adjConverter(self) -> ConversionAdj:
         model_conversion = conversionFromToAdj(
             ["glb", "gltf", "obj"],
             ["glb", "gltf", "obj"]
         )
-        video_conversion = {
-            "glb": ["mp4"],
-            "gltf": ["mp4"], 
-            "obj": ["mp4"]
-        }
-        image_conversion = {
-            "glb": ["png"],
-            "gltf": ["png"], 
-            "obj": ["png"]
-        }
-        gif_conversion = {
-            "glb": ["gif"],
-            "gltf": ["gif"], 
-            "obj": ["gif"]
-        }
-        return mergeAdj(model_conversion, video_conversion, image_conversion, gif_conversion)
+        video_conversion = conversionFromToAdj(
+            ["glb", "gltf", "obj"],
+            ["mp4"]
+        )
+        image_conversion = conversionFromToAdj(
+            ["glb", "gltf", "obj"],
+            ["png"]
+        )
+        gif_conversion = conversionFromToAdj(
+            ["glb", "gltf", "obj"],
+            ["gif"]
+        )
+        return model_conversion + video_conversion + image_conversion + gif_conversion
 
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
@@ -925,6 +935,3 @@ class threeDConverter(Converter):
                     writer.append_data(image)
         
         ctx.release()
-
-    def metDependencies(self) -> bool:
-        return checkLibsDependencies(["trimesh", "moderngl", "pyrr", "PIL", "imageio", "imageio_ffmpeg"]) 
