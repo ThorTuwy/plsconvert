@@ -214,20 +214,62 @@ class brailleConverter(Converter):
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
-        with open(input, 'r', encoding='utf-8') as file:
-            content = file.read()
-        
         if input_extension == "txt" and output_extension == "braille":
-            # Convert text to Braille
+            # Read text file and convert to Braille
+            with open(input, 'r', encoding='utf-8') as file:
+                content = file.read()
             converted_content = self.convert_text(content, to_braille=True)
+            # Write as binary braille file
+            with open(output, 'wb') as file:
+                file.write(converted_content.encode('utf-8'))
+                
         elif input_extension == "braille" and output_extension == "txt":
-            # Convert Braille to text
+            # Read binary braille file and convert to text
+            try:
+                # First try to read as UTF-8 text (for text-based braille files)
+                with open(input, 'r', encoding='utf-8') as file:
+                    content = file.read()
+            except UnicodeDecodeError:
+                # If that fails, read as binary and try to decode
+                with open(input, 'rb') as file:
+                    binary_content = file.read()
+                    try:
+                        content = binary_content.decode('utf-8')
+                    except UnicodeDecodeError:
+                        # If still can't decode, treat as raw binary data
+                        # Convert binary data to braille characters
+                        content = ""
+                        for byte in binary_content:
+                            if byte < 0x80:  # ASCII range
+                                content += chr(0x2800 + byte)  # Map to braille range
+                            else:
+                                content += chr(0x2800 + (byte % 64))  # Map to braille range
             converted_content = self.convert_text(content, to_braille=False)
+            with open(output, 'w', encoding='utf-8') as file:
+                file.write(converted_content)
+                
         elif input_extension == "braille" and output_extension == "svg":
-            # Convert Braille to SVG visual representation
+            # Read binary braille file and convert to SVG
+            try:
+                # First try to read as UTF-8 text
+                with open(input, 'r', encoding='utf-8') as file:
+                    content = file.read()
+            except UnicodeDecodeError:
+                # If that fails, read as binary and try to decode
+                with open(input, 'rb') as file:
+                    binary_content = file.read()
+                    try:
+                        content = binary_content.decode('utf-8')
+                    except UnicodeDecodeError:
+                        # If still can't decode, treat as raw binary data
+                        content = ""
+                        for byte in binary_content:
+                            if byte < 0x80:  # ASCII range
+                                content += chr(0x2800 + byte)  # Map to braille range
+                            else:
+                                content += chr(0x2800 + (byte % 64))  # Map to braille range
             converted_content = self.convert_to_svg(content)
+            with open(output, 'w', encoding='utf-8') as file:
+                file.write(converted_content)
         else:
             raise ValueError(f"Unsupported conversion: {input_extension} to {output_extension}")
-        
-        with open(output, 'w', encoding='utf-8') as file:
-            file.write(converted_content)
