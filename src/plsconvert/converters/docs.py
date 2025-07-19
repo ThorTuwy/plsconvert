@@ -1,12 +1,28 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
+from plsconvert.converters.registry import register_converter
+from plsconvert.utils.graph import ConversionAdj
 from plsconvert.utils.graph import conversionFromToAdj
-from plsconvert.utils.dependency import checkToolsDependencies, checkLibsDependencies
 from plsconvert.utils.files import runCommand
+from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
+from plsconvert.utils.dependency import LibDependency as Lib
 
 
+@register_converter
 class pandoc(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    Pandoc converter.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Pandoc Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Tool("pandoc")])
+
+    def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(
             [
                 "bib",
@@ -117,13 +133,23 @@ class pandoc(Converter):
         command = ["pandoc", str(input), "-o", str(output)]
         runCommand(command)
 
-    def metDependencies(self) -> bool:
-        return checkToolsDependencies(["pandoc"])
 
-
+@register_converter
 class docxFromPdf(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
-        return {"pdf": ["docx"]}
+    """
+    Docx from pdf converter using pdf2docx.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Pdf2Docx Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Lib("pdf2docx")])
+
+    def adjConverter(self) -> ConversionAdj:
+        return conversionFromToAdj(["pdf"], ["docx"])
 
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
@@ -131,13 +157,23 @@ class docxFromPdf(Converter):
         import pdf2docx
 
         cv = pdf2docx.Converter(str(input))
-        cv.convert(output, multi_processing=True)
+        cv.convert(str(output), multi_processing=True)
 
-    def metDependencies(self) -> bool:
-        return checkLibsDependencies(["pdf2docx"])
-
+@register_converter
 class csvFromExcel(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
+    """
+    Csv from excel converter using pandas.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Excel2Csv Converter"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Lib("pandas"), Lib("openpyxl")])
+
+    def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(
             ["xls", "xlsx", "xlsm", "xlsb"],
             ["csv"],
@@ -150,7 +186,3 @@ class csvFromExcel(Converter):
 
         df = pd.read_excel(input)
         df.to_csv(output, index=False)
-
-    def metDependencies(self) -> bool:
-        return checkLibsDependencies(["pandas", "openpyxl"])
-

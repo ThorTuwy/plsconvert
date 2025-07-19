@@ -1,26 +1,69 @@
 import copy
 from collections import deque
-from typing import Dict, List, Tuple, Optional, Any, Deque
+from typing import Tuple, Deque, Union
+from plsconvert.converters.abstract import Converter
 from plsconvert.utils.files import fileType
+from typing import TypeAlias
 
+Format: TypeAlias = str
 
+class Conversion(tuple[Format, Converter]):
+    @property
+    def format(self) -> Format:
+        return self[0]
+    
+    @property
+    def converter(self) -> Converter:
+        return self[1]
 
+class ConversionAdj(dict[Format, list[Conversion]]):
+    def filter(self, formats: list[Format]) -> "ConversionAdj":
+        return ConversionAdj({key: value for key, value in self.items() if key in formats})
+    
+    def countConverters(self) -> tuple[dict[str, int], int]:
+        """
+        Count the number of connections for each converter.
+        Returns a dictionary of converters and the number of connections.
+        """
+        totalConversions = 0
+        counts: dict[str, int] = {}
+        for _, value in self.items():
+            for conversion in value:
+                if str(conversion.converter) not in counts:
+                    counts[str(conversion.converter)] = 0
+                counts[str(conversion.converter)] += 1
+                totalConversions += 1
+
+        # Remove duplicates cause some converters appear multiple times
+        counts = {converter: count for converter, count in counts.items() if count > 0}
+
+        return counts, totalConversions
+    
+    def countFormats(self) -> dict[Format, int]:
+        """
+        Count the number of connections for each format.
+        Returns a dictionary of formats and the number of connections.
+        """
+        return {key: len(value) for key, value in self.items()}
+    
+    def __add__(self, other: "ConversionAdj") -> "ConversionAdj":
+        return mergeAdj(self, other)
 
 def conversionFromToAdj(
-    conversionFrom: List[str], conversionTo: List[str]
-) -> Dict[str, List[str]]:
+    conversionFrom: list[Union[str, Format]], conversionTo: list[str]
+) -> ConversionAdj:
     """
     Create a dictionary mapping from conversionFrom to conversionTo.
     """
-    adj = {}
+    adj: ConversionAdj = ConversionAdj()
 
     for source in conversionFrom:
-        adj[source] = conversionTo
+        adj[source] = [(target, source) for target in conversionTo] # type: ignore
 
     return adj
 
 
-def mergeAdj(adj1: Dict[str, List[str]], adj2: Dict[str, List[str]]) -> Dict[str, List[str]]:
+def mergeAdj(adj1: ConversionAdj, adj2: ConversionAdj) -> ConversionAdj:
     """
     Merge two adjacency dictionaries.
     """
@@ -33,14 +76,14 @@ def mergeAdj(adj1: Dict[str, List[str]], adj2: Dict[str, List[str]]) -> Dict[str
     return adj1
 
 
-def bfs(start: str, end: str, adj: Dict[str, List[List[str]]]) -> List[List[str]]:
+def bfs(start: Union[str, Format], end: Union[str, Format], adj: ConversionAdj) -> list[Conversion]:
     visited = []
-    queue: Deque[Tuple[str, List[List[str]]]] = deque([(start, [])])
+    queue: Deque[Tuple[Format, list[Conversion]]] = deque([(Format(start), [])])
 
     while queue:
         current, path = queue.popleft()
 
-        if current == end:
+        if current == Format(end):
             return path
         visited.append(current)
 
@@ -55,7 +98,7 @@ def bfs(start: str, end: str, adj: Dict[str, List[List[str]]]) -> List[List[str]
         for neighbor, converter in adj.get(current, []):
             if neighbor not in visited:
                 path_copy = path.copy()
-                path_copy.append([neighbor, converter])
+                path_copy.append(Conversion((neighbor, converter)))
                 queue.append((neighbor, path_copy))
 
     return []

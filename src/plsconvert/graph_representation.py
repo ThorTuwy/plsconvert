@@ -1,4 +1,7 @@
-from typing import Dict, List, Tuple, Optional, Any
+from typing import List, Tuple, Optional, Any
+from plsconvert.utils.graph import ConversionAdj, Format, Conversion
+from plsconvert.converters.abstract import Converter
+
 try:
     import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
@@ -9,7 +12,7 @@ except ImportError:
 
     
 
-def getAllConvertersAdjacency(theoretical: bool = False) -> Dict[str, List[List[str]]]:
+def getAllConvertersAdjacency(theoretical: bool = False) -> ConversionAdj:
     """
     Get the adjacency dictionary from all converters.
     
@@ -28,7 +31,7 @@ def getAllConvertersAdjacency(theoretical: bool = False) -> Dict[str, List[List[
     return completeAdj
 
 
-def getAllFormats(adj: Dict[str, List[List[str]]]) -> Tuple[List[str], List[Tuple[str, str, str]]]:
+def getAllFormats(adj: ConversionAdj) -> Tuple[List[str], List[Tuple[Format, Format, Converter]]]:
     """
     Extract all unique formats (nodes) and connections (edges) from adjacency dictionary.
     
@@ -37,15 +40,15 @@ def getAllFormats(adj: Dict[str, List[List[str]]]) -> Tuple[List[str], List[Tupl
         - List of all unique format nodes
         - List of connections as (source, target, converter) tuples
     """
-    all_formats = set()
-    all_connections = []
+    all_formats: set[Format] = set()
+    all_connections: list[Tuple[Format, Format, Converter]] = []
     
     for source, targets in adj.items():
         all_formats.add(source)
         for target, converter in targets:
             all_connections.append((source, target, converter))
     
-    return sorted(list(all_formats)), all_connections
+    return list(all_formats), all_connections
 
 class FormatGraphVisualizer:
     """
@@ -53,12 +56,11 @@ class FormatGraphVisualizer:
     """
     
     def __init__(self):
-        
         self.selected_formats = {
-            'image': ['jpg', 'png', 'gif', 'pdf', 'ico'],
+            'image': ['jpg', 'png', 'gif', 'pdf', 'ico', 'svg'],
             'video': ['mp4', 'mkv', 'mov'],
             'audio': ['mp3', 'wav', 'mid'],
-            'document': ['docx', 'doc', 'odt', 'txt', 'html', 'tex', 'pptx', 'csv'],
+            'document': ['docx', 'doc', 'odt', 'txt', 'html', 'tex', 'pptx', 'csv', 'braille'],
             'config': ['json', 'toml', 'yaml', 'ini'],
             'compression': ['zip', '7z', 'tar', 'rar'],
             'other': []
@@ -88,26 +90,22 @@ class FormatGraphVisualizer:
         category = self.getFormatCategory(formatName)
         return self.category_colors.get(category, self.category_colors['other'])
     
-    def filterSelectedFormats(self, adj: Dict[str, List[List[str]]]) -> Dict[str, List[List[str]]]:
+    def filterSelectedFormats(self, adj: ConversionAdj) -> ConversionAdj:
         """
         Filter the adjacency dictionary to include only selected formats.
         """
-        allSelected = set()
+        allSelected: set[Format] = set()
         for formats in self.selected_formats.values():
             allSelected.update(formats)
         
-        filteredAdj = {}
+        filteredAdj: ConversionAdj = ConversionAdj()
         for source in allSelected:
             if source in adj:
-                filteredTargets = []
-                for target, converter in adj[source]:
-                    if target in allSelected:
-                        filteredTargets.append([target, converter])
-                filteredAdj[source] = filteredTargets
-        
+                filteredAdj[source] = [Conversion((format, converter)) for format, converter in adj[source] if format in allSelected]
+
         return filteredAdj
     
-    def createNetworkxGraph(self, adj: Dict[str, List[List[str]]], filterSelected: bool = True):
+    def createNetworkxGraph(self, adj: ConversionAdj, filterSelected: bool = True):
         """
         Create a NetworkX directed graph from the adjacency dictionary.
         """
@@ -214,7 +212,7 @@ class FormatGraphVisualizer:
             nodeColors = [G.nodes[node]['color'] for node in G.nodes()]
 
             # Draw nodes
-            nx.draw_networkx_nodes(G, pos, node_color=nodeColors, node_size=1000, alpha=0.8)
+            nx.draw_networkx_nodes(G, pos, node_color=nodeColors, node_size=1000, alpha=0.8) # type: ignore
             
             # Draw edges
             nx.draw_networkx_edges(G, pos, edge_color='gray', arrows=True, 
@@ -259,7 +257,7 @@ class FormatGraphVisualizer:
         else:
             plt.show()
     
-    def analyzeGraphMetrics(self, adj: Dict[str, List[List[str]]]) -> Dict[str, Any]:
+    def analyzeGraphMetrics(self, adj: ConversionAdj) -> dict[str, Any]:
         """
         Analyze various metrics of the transformation graph.
         """
@@ -298,7 +296,7 @@ class FormatGraphVisualizer:
         
         return metrics
     
-    def printGraphMetrics(self, adj: Dict[str, List[List[str]]]):
+    def printGraphMetrics(self, adj: ConversionAdj):
         """
         Print detailed graph metrics.
         """
@@ -345,32 +343,11 @@ def printAllFormatsAndConnections(theoretical: bool = False):
     print(f"  Total unique formats: {len(allFormats)}")
     print(f"  Total connections: {len(allConnections)}")
     
-    converterCounts = {}
-    for _, _, converter in allConnections:
-        if converter not in converterCounts:
-            converterCounts[converter] = 0
-        converterCounts[converter] += 1
+    converterCounts, totalCount = completeAdj.countConverters()
+    print(f"  Total converters: {totalCount}")
     
     print(f"\nConverter statistics ({graphType}):")
     for converter, count in sorted(converterCounts.items(), key=lambda x: x[1], reverse=True):
         print(f"  {converter}: {count} connections")
     
     return completeAdj, allFormats, allConnections
-
-
-# Convenience function to create and use the visualizer
-def visualizeFormatGraph(**kwargs):
-    """
-    Convenience function to quickly visualize a plsconvert graph. Always uses theoretical graph.
-    """
-    visualizer = FormatGraphVisualizer()
-    visualizer.visualizeGraph(**kwargs)
-
-
-def analyzeFormatGraph(adj: Dict[str, List[List[str]]]):
-    """
-    Convenience function to analyze and print plsconvert graph information.
-    Always assumes filtered/selected formats are being analyzed.
-    """
-    visualizer = FormatGraphVisualizer()
-    visualizer.printGraphMetrics(adj)
