@@ -63,12 +63,12 @@ def conversionFromToAdj(
     return adj
 
 
-def mergeAdj(adj1: ConversionAdj, adj2: ConversionAdj) -> ConversionAdj:
+def mergeAdj(*adjs: ConversionAdj) -> ConversionAdj:
     """
     Merge any number of adjacency dictionaries.
     """
     if not adjs:
-        return {}
+        return ConversionAdj()
     
     result = copy.deepcopy(adjs[0])
     
