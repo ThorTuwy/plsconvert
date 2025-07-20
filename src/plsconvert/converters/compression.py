@@ -5,7 +5,7 @@ from plsconvert.converters.registry import register_converter
 from plsconvert.utils.graph import ConversionAdj
 from plsconvert.utils.graph import conversionFromToAdj
 from plsconvert.utils.files import runCommand
-from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool, LibDependency as Lib
+from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
 from plsconvert.utils.dependency import getSevenZipPath
 import platform
 
@@ -22,7 +22,8 @@ class tar(Converter):
 
     @property
     def dependencies(self) -> Dependencies:
-        return Dependencies([Lib("gzip"), Tool("bzip2"), Tool("xz")])
+        # TODO: Make gzip a Lib instead of Tool
+        return Dependencies([Tool("gzip"), Tool("bzip2"), Tool("xz")])
 
     def adjConverter(self) -> ConversionAdj:
         return conversionFromToAdj(

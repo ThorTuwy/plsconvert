@@ -13,11 +13,12 @@ class ToolDependency(str):
     def check(self) -> bool:
         if "7z" in self and platform.system() == "Windows":
             return getSevenZipPath() is not None
-        else:
-            if LibDependency(self).check:
-                print(f"{self} found as library, should be changed from ToolDependency to LibDependency")
+        # DEV ONLY
+        # else:
+        #     if LibDependency(self).check:
+        #         print(f"{self} found as library, should be changed from ToolDependency to LibDependency")
 
-                return True
+        #         return False
 
         try:
             runCommand([self, "--help"])
