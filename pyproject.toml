@@ -6,7 +6,8 @@ readme = "README.md"
 authors = [{ name = "ThorTuwy", email = "tuwy@tuwy.win" }]
 requires-python = ">=3.13"
 dependencies = [
-    "halo>=0.0.31"
+    "halo>=0.0.31",
+    "tqdm>=4.67.1",
 ]
 
 [project.optional-dependencies]

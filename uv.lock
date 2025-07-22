@@ -703,6 +703,7 @@ version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "halo" },
+    { name = "tqdm" },
 ]
 
 [package.optional-dependencies]
@@ -828,6 +829,7 @@ requires-dist = [
     { name = "rapidocr", marker = "extra == 'ai'", specifier = ">=3.2.0" },
     { name = "scipy", marker = "extra == 'audio'", specifier = ">=1.16.0" },
     { name = "tomlkit", marker = "extra == 'config'", specifier = ">=0.13.3" },
+    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "trimesh", marker = "extra == '3d'", specifier = ">=4.5.1" },
 ]
 provides-extras = ["docs", "audio", "3d", "graph", "config", "ai", "noai", "all", "dev"]

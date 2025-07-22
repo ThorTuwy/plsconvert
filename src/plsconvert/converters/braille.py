@@ -1,5 +1,5 @@
 from pathlib import Path
-from plsconvert.converters.abstract import Converter
+from plsconvert.converters.abstract import Converter, pbRegistry, withProgressBar
 from plsconvert.converters.registry import register_converter
 from plsconvert.utils.graph import ConversionAdj
 from plsconvert.utils.graph import conversionFromToAdj
@@ -19,6 +19,12 @@ class brailleConverter(Converter):
     @property
     def dependencies(self) -> Dependencies:
         return Dependencies.empty()
+
+    def hasProgressBar4Pair(self, pair: tuple[str, str]) -> bool:
+        for func_name, pairs in pbRegistry.getFunctionsWithProgressBar().items():
+            if hasattr(self, func_name) and pair in pairs:
+                return True
+        return False
 
     def __init__(self):
         super().__init__()
@@ -91,6 +97,7 @@ class brailleConverter(Converter):
         # Create reverse mapping for Braille to text conversion
         self.reverse_mapping = {v: k for k, v in self.mapping.items()}
 
+    @withProgressBar([("txt", "braille"), ("braille", "txt")])
     def convert_text(self, input_str: str, to_braille: bool = True) -> str:
         """
         Convert text to/from Braille
@@ -103,6 +110,8 @@ class brailleConverter(Converter):
             Converted string
         """
         out = ""
+        pbar = self.pbInit(len(input_str))
+
         if to_braille:
             # Convert text to Braille
             for input_char in input_str:
@@ -113,6 +122,7 @@ class brailleConverter(Converter):
                 else:
                     # If character not in mapping, keep original
                     out += input_char
+                pbar.update(1)
         else:
             # Convert Braille to text
             for braille_char in input_str:
@@ -121,8 +131,10 @@ class brailleConverter(Converter):
                 else:
                     # If Braille character not in mapping, keep original
                     out += braille_char
+                pbar.update(1)
         return out
 
+    @withProgressBar([("braille", "svg")])
     def convert_to_svg(self, braille_str: str) -> str:
         """
         Convert Braille text to SVG visual representation
@@ -144,6 +156,8 @@ class brailleConverter(Converter):
         chars_per_line = 30
         lines = []
         current_line = ""
+
+        pbar = self.pbInit(len(braille_str) + len(braille_str) * 6)
         
         for char in braille_str:
             if char == '\n':
@@ -155,6 +169,7 @@ class brailleConverter(Converter):
                 if len(current_line) >= chars_per_line:
                     lines.append(current_line)
                     current_line = ""
+            pbar.update(1)
         
         if current_line:
             lines.append(current_line)
@@ -204,7 +219,10 @@ class brailleConverter(Converter):
                     
                     if is_raised:
                         svg_content += f'<circle cx="{dot_x}" cy="{dot_y}" r="{dot_size//2}" class="dot-filled"/>\n'
-        
+
+                    pbar.update(1)
+
+        pbar.close()
         svg_content += '</svg>'
         return svg_content
 
@@ -237,7 +255,6 @@ class brailleConverter(Converter):
                         content = binary_content.decode('utf-8')
                     except UnicodeDecodeError:
                         # If still can't decode, treat as raw binary data
-                        # Convert binary data to braille characters
                         content = ""
                         for byte in binary_content:
                             if byte < 0x80:  # ASCII range

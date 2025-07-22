@@ -65,28 +65,39 @@ class universalConverter:
 
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
-                for conversion in path[:-1]:
-                    with Halo(
-                        text=f"Converting from {input_extension} to {conversion.format} with {conversion.converter}",
-                        spinner="dots",
-                    ) as spinner:
+                for conversion in path:
+                    converter = conversion.converter
+                    
+                    # Check if this converter has progress bar support for this specific conversion
+                    if converter.hasProgressBar4Pair((input_extension, conversion.format)):
+                        print(f"Converting {input_extension} to {conversion.format} with {converter}")
+                        
                         temp_output = (
                             Path(temp_dir) / f"{output.stem + '.' + conversion.format}"
                         )
-                        conversion.converter.convert(
+                        converter.convert(
                             input, temp_output, input_extension, conversion.format
                         )
-                        input = temp_output
-                        input_extension = conversion.format
-
-                        spinner.succeed()
-
-                with Halo(
-                    text=f"Final conversion {input_extension} to {output_extension} with {path[-1].converter}",
-                    spinner="dots",
-                ) as spinner:
-                    path[-1].converter.convert(input, output, input_extension, output_extension)
-                    spinner.succeed()
+                        
+                        # Close progress bar if it exists
+                        if converter.progressBar:
+                            converter.progressBar.close()
+                    else:
+                        # Use Halo for converters without progress bar
+                        with Halo(
+                            text=f"Converting from {input_extension} to {conversion.format} with {converter}",
+                            spinner="dots",
+                        ) as spinner:
+                            temp_output = (
+                                Path(temp_dir) / f"{output.stem + '.' + conversion.format}"
+                            )
+                            converter.convert(
+                                input, temp_output, input_extension, conversion.format
+                            )
+                            spinner.succeed()
+                    
+                    input = temp_output
+                    input_extension = conversion.format
 
         except FileNotFoundError as e:
             print(f"Error: {e}. Please ensure the input file exists.", file=sys.stderr)
