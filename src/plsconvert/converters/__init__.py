@@ -8,15 +8,8 @@ This package contains all the converter implementations and the registry system.
 # ruff: noqa: F401
 from . import abstract  
 from . import registry
-from . import audio
-from . import docs
-from . import media
-from . import compression
-from . import ai
-from . import braille
-from . import configs
-from . import threed
 from . import universal
+from .addons import audio, docs, ai, braille, media, compression, configs, threed
 
 # Export the main classes
 from .abstract import Converter
