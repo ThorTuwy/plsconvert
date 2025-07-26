@@ -26,7 +26,7 @@ plsconvert pipe.mp3 funny.pdf
 ```
 <img width="493" height="517" alt="image" src="https://github.com/user-attachments/assets/d25a7d55-2a69-4571-b1f2-b36280bb4f1f" />
 
-## Destiled graph visualization
+## Distilled graph visualization
 <img width="5611" height="4773" alt="image" src="https://github.com/user-attachments/assets/fba46505-c42c-4036-9f6e-257410c085db" />
 
 
