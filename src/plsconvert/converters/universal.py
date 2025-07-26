@@ -1,6 +1,7 @@
 from pathlib import Path
 import tempfile
 import sys
+import warnings
 from plsconvert.converters.registry import ConverterRegistry
 from halo import Halo
 
@@ -59,6 +60,7 @@ class universalConverter:
                         # Close progress bar if it exists
                         if converter.progressBar:
                             converter.progressBar.close()
+                            warnings.warn(f"Progress bar for {conversion.pair} in converter {converter} should be closed inside the converter.")
                     else:
                         # Use Halo for converters without progress bar
                         with Halo(
