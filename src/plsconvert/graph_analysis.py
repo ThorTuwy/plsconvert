@@ -90,10 +90,15 @@ def save_analysis_to_local():
                 print(f"  {fmt}: {preview}{more_text}")
         
         # Check for formats with no conversion options
-        no_targets = [fmt for fmt, targets in simple_graph.items() if len(targets) == 0]
-        if no_targets:
-            print(f"\nFormats with no conversion options: {len(no_targets)}")
-            print(f"  {no_targets}")
+        formats_with_no_conversion_options = []
+        for source_format, targets in simple_graph.items():
+            for target in targets:
+                if target not in simple_graph and target not in formats_with_no_conversion_options:
+                    formats_with_no_conversion_options.append(target)
+
+        if formats_with_no_conversion_options:
+            print(f"\nFormats with no conversion options: {len(formats_with_no_conversion_options)}")
+            print(f"  {formats_with_no_conversion_options}")
         
         print(f"\nJSON file ready for external use")
         print(f"Location: {output_file.absolute()}")
