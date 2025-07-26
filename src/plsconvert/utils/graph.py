@@ -166,13 +166,19 @@ class Graph(dict[Format, ConversionList]):
         """
         Get all unique formats in the graph.
         """
-        return list(set(self.getAllSourceFormats()) | set([conversion.output for conversionList in self.values() for conversion in conversionList]))
+        return list(set(self.getAllSourceFormats()) | set(self.getAllTargetFormats()))
     
     def getAllSourceFormats(self) -> list[Format]:
         """
         Get all source formats in the graph.
         """
         return list(self.keys())
+    
+    def getAllTargetFormats(self) -> list[Format]:
+        """
+        Get all target formats in the graph.
+        """
+        return list(set([conversion.output for conversionList in self.values() for conversion in conversionList]))
     
     def getAllConversions(self) -> list[Conversion]:
         """
