@@ -1,13 +1,12 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.converters.registry import register_converter
-from plsconvert.utils.graph import ConversionAdj
-from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.converters.registry import addMethodData, registerConverter
+from plsconvert.utils.graph import PairList
 from plsconvert.utils.files import runCommand, fileType
 from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
 
 
-@register_converter
+@registerConverter
 class ffmpeg(Converter):
     """
     Video and audio converter using ffmpeg.
@@ -20,69 +19,67 @@ class ffmpeg(Converter):
     @property
     def dependencies(self) -> Dependencies:
         return Dependencies([Tool("ffmpeg")])
+    
+    _SUPPORTED_PAIRS_VIDEO = PairList.all2all(
+        [
+            "mp4",
+            "mkv",
+            "mov",
+            "avi",
+            "webm",
+            "flv",
+            "mpg",
+            "ts",
+            "wmv",
+            "hls",
+            "rtsp",
+            "rtmp",
+            "mp3",
+            "aac",
+            "flac",
+            "wav",
+            "ogg",
+            "wma",
+            "m4a",
+            "opus",
+        ],
+        [
+            "mp4",
+            "mkv",
+            "mov",
+            "avi",
+            "webm",
+            "flv",
+            "mp3",
+            "aac",
+            "flac",
+            "wav",
+            "ogg",
+            "opus",
+            "hls",
+            "dash",
+            "null",
+        ],
+    )
+    _SUPPORTED_PAIRS_IMAGES = PairList.all2all(
+        ["png", "jpg", "jpeg", "gif", "bmp", "tiff"],
+        [
+            "mp4",
+            "mkv",
+            "mov",
+            "avi",
+            "webm",
+            "flv",
+            "gif",
+            "png",
+            "jpg",
+            "hls",
+            "dash",
+        ],
+    )
 
-    def adjConverter(self) -> ConversionAdj:
-        adjGeneral = conversionFromToAdj(
-            [
-                "mp4",
-                "mkv",
-                "mov",
-                "avi",
-                "webm",
-                "flv",
-                "mpg",
-                "ts",
-                "wmv",
-                "hls",
-                "rtsp",
-                "rtmp",
-                "mp3",
-                "aac",
-                "flac",
-                "wav",
-                "ogg",
-                "wma",
-                "m4a",
-                "opus",
-            ],
-            [
-                "mp4",
-                "mkv",
-                "mov",
-                "avi",
-                "webm",
-                "flv",
-                "mp3",
-                "aac",
-                "flac",
-                "wav",
-                "ogg",
-                "opus",
-                "hls",
-                "dash",
-                "null",
-            ],
-        )
-        adjPictures = conversionFromToAdj(
-            ["png", "jpg", "jpeg", "gif", "bmp", "tiff"],
-            [
-                "mp4",
-                "mkv",
-                "mov",
-                "avi",
-                "webm",
-                "flv",
-                "gif",
-                "png",
-                "jpg",
-                "hls",
-                "dash",
-            ],
-        )
-
-        return adjGeneral + adjPictures
-
-    def convert(
+    @addMethodData(_SUPPORTED_PAIRS_VIDEO + _SUPPORTED_PAIRS_IMAGES, False)
+    def media_to_media(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         command = ["ffmpeg", "-y", "-i", str(input), str(output)]
@@ -95,7 +92,7 @@ class ffmpeg(Converter):
         runCommand(command)
 
 
-@register_converter
+@registerConverter
 class imagemagick(Converter):
     """
     Image converter using imagemagick.
@@ -109,8 +106,7 @@ class imagemagick(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Tool("magick")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(
+    _SUPPORTED_PAIRS_IMAGES = PairList.all2all(
             [
                 "3fr",
                 "3g2",
@@ -486,7 +482,8 @@ class imagemagick(Converter):
             ],
         )
 
-    def convert(
+    @addMethodData(_SUPPORTED_PAIRS_IMAGES, False)
+    def image_to_image(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         command = ["magick", str(input), str(output)]

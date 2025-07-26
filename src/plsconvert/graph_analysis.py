@@ -15,19 +15,19 @@ def generate_graph_analysis():
     """Generate simplified theoretical conversion graph analysis"""
     
     try:
-        from .graph_representation import getAllConvertersAdjacency
+        from plsconvert.converters.registry import ConverterRegistry
         
         print("Loading theoretical graph...")
         
         # Get complete theoretical adjacency (all possible conversions)
-        theoretical_adj = getAllConvertersAdjacency(theoretical=True)
+        theoreticalGraph = ConverterRegistry.theoreticalGraph
         
         # Create simplified structure: format -> [list of target formats]
         simple_graph = {}
         
-        for source_format, targets in theoretical_adj.items():
+        for source_format, targets in theoreticalGraph.items():
             # Extract just the target formats (ignore converter names)
-            target_formats = [target[0] for target in targets]
+            target_formats = [target.output for target in targets]
             # Remove duplicates and sort
             target_formats = sorted(list(set(target_formats)))
             simple_graph[source_format] = target_formats

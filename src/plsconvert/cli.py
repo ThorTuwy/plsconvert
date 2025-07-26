@@ -6,33 +6,34 @@ import warnings
 import logging
 
 from plsconvert.converters.universal import universalConverter
+from plsconvert.converters.registry import ConverterRegistry
 
 warnings.filterwarnings("ignore")
 logging.disable(logging.CRITICAL)
 
 
 def dependencyCheck():
-    self = universalConverter()
-    self.checkDependencies()
+    converter = universalConverter()
+    converter.checkAllDependencies()
 
 
 def generateGraph(layout: str = 'community'):
     """Generate plsconvert graph using NetworkX. Always generates theoretical graph visualization."""
-    from plsconvert.graph_representation import printAllFormatsAndConnections, FormatGraphVisualizer, getAllFormats
+    from plsconvert.graph_representation import FormatGraphVisualizer
     
     print(f"Generating plsconvert graph with NetworkX (layout: {layout})...")
-    # Print complete theoretical system information
-    completeAdj, allFormats, allConnections = printAllFormatsAndConnections(theoretical=True)
     
     # Filter to selected formats and show analysis
     print("\nFiltering with selected formats")
     
     graphVisualizer = FormatGraphVisualizer()
-    filteredAdj = graphVisualizer.filterSelectedFormats(completeAdj)
-    filteredFormats, filteredConnections = getAllFormats(filteredAdj)
+
+    formatsToShow = graphVisualizer.getFormatsToShow()
+    filteredGraph = ConverterRegistry.theoreticalGraph.hardFilter(formatsToShow)
+    filteredConnections = filteredGraph.getAllConversions()
     
     print("\nFiltered overview:")
-    print(f"  Filtered formats: {len(filteredFormats)}")
+    print(f"  Filtered formats: {len(formatsToShow)}")
     print(f"  Filtered connections: {len(filteredConnections)}")
     
     # Generate visualization

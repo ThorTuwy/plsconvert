@@ -1,64 +1,13 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Any
+from typing import TYPE_CHECKING, final
 from plsconvert.utils.dependency import Dependencies
-from tqdm import tqdm
-from functools import wraps
+from plsconvert.converters.progressbar import ProgressBar
+from plsconvert.utils.graph import Pair
 
 if TYPE_CHECKING:
-    from plsconvert.utils.graph import ConversionAdj
-
-class ProgressBar:
-    def __init__(self, total: int, bar_format: str = '|{bar}| {percentage:3.0f}% [{elapsed}<{remaining}]'):
-        self.total = total
-        self.bar_format = bar_format
-        self.pbar = tqdm(total=total, bar_format=bar_format)
-
-    def update(self, n: int = 1):
-        self.pbar.update(n)
-
-    def extend(self, n: int):
-        self.pbar.total += n
-
-    def close(self):
-        self.pbar.close()
-
-    class Registry:
-        """Registry for tracking which functions have progress bar support."""
-        
-        def __init__(self):
-            self._functions_with_progress = {}
-        
-        def register(self, func: Callable[..., Any], pairList: list[tuple[str, str]] | None = None) -> Callable[..., Any]:
-            """Decorator to register a function as having progress bar support."""
-            if pairList is None:
-                pairList = []
-            # Store by function name for easier lookup
-            self._functions_with_progress[func.__name__] = pairList
-            return func
-        
-        def hasProgressBar(self, func_name: str, pair: tuple[str, str]) -> bool:
-            """Check if a function has progress bar support for a specific pair."""
-            if func_name not in self._functions_with_progress:
-                return False
-            return pair in self._functions_with_progress[func_name]
-        
-        def getFunctionsWithProgressBar(self) -> dict[str, list[tuple[str, str]]]:
-            """Get all functions with progress bar support."""
-            return self._functions_with_progress.copy()
-        
-        def getPairsForFunction(self, func_name: str) -> list[tuple[str, str]]:
-            """Get all pairs supported by a specific function."""
-            return self._functions_with_progress.get(func_name, [])
-
-# Global registry instance
-pbRegistry = ProgressBar.Registry()
-
-def withProgressBar(pairList: list[tuple[str, str]] | None = None):
-    """Decorator to mark a function as having progress bar support."""
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        return pbRegistry.register(func, pairList or [])
-    return decorator
+    from plsconvert.utils.graph import Graph
+    from plsconvert.converters.progressbar import ProgressBar
 
 class Converter(ABC):
     """
@@ -71,22 +20,6 @@ class Converter(ABC):
 
     def exist(self) -> bool:
         return True
-
-    def adj(self) -> "ConversionAdj":
-        from plsconvert.utils.graph import ConversionAdj, Conversion
-        old_adj = self.adjConverter()
-        adj = {}
-        for source in old_adj:
-            new_targets = []
-            for target_tuple in old_adj[source]:
-                # target_tuple is (target_format, source_format) from conversionFromToAdj
-                target_format = target_tuple[0]
-                if target_format not in adj:
-                    adj[target_format] = []
-                if source != target_format:  # Avoid self-loops
-                    new_targets.append(Conversion((target_format, self)))
-            adj[source] = new_targets
-        return ConversionAdj(adj)
     
     @property
     @abstractmethod
@@ -102,52 +35,69 @@ class Converter(ABC):
     @property
     @abstractmethod
     def dependencies(self) -> Dependencies:
+        """
+        Get the dependencies for the converter.
+        """
         return Dependencies.empty()
-
-    def hasProgressBar(self, function: Callable[..., Any], pair: tuple[str, str]) -> bool:
+    
+    @property
+    def localGraph(self) -> "Graph":
         """
-        Check if a specific function has progress bar support for a specific pair.
-        
-        Args:
-            function: Function to check
-            pair: Pair of input and output extensions
-            
-        Returns:
-            True if the function supports progress bars for this pair, False otherwise
+        Generate a local graph for the converter.
         """
-        return pbRegistry.hasProgressBar(function.__name__, pair)
-
-    def hasProgressBar4Pair(self, pair: tuple[str, str]) -> bool:
+        if not hasattr(self, "_localGraph"):
+            from plsconvert.utils.graph import Graph, Conversion, ConversionData
+            graph = Graph()
+            for attr_name in self.__class__.__dict__:
+                attr = self.__class__.__dict__[attr_name]
+                # Check if the attribute is a callable and has 'supportedPairs'
+                if callable(attr) and hasattr(attr, "supportedPairs"):
+                    pairs = getattr(attr, "supportedPairs")
+                    # Add a Conversion for each supported pair
+                    for pair in pairs:
+                        graph += Conversion(
+                            pair=pair,
+                            conversionData=ConversionData(
+                                converter=self,
+                                method=attr,
+                                hasProgressBar=getattr(attr, "hasProgressBar", False),
+                            )
+                        )
+            self._localGraph = graph
+        return self._localGraph
+    
+    @final
+    def convert(self, input: Path, output: Path, input_extension: str, output_extension: str, *args, **kwargs) -> None:
         """
-        Check if this converter has progress bar support for a specific conversion.
-        
-        Args:
-            pair: Pair of input and output extensions
-            
-        Returns:
-            True if the conversion supports progress bars, False otherwise
+        Dispatch conversion to the appropriate method based on input and output extensions.
         """
-        # Check if any function in this converter supports this pair
-        for func_name in self.getFunctionsWithProgressBar():
-            if pbRegistry.hasProgressBar(func_name, pair):
-                return True
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if callable(attr) and hasattr(attr, "supportedPairs"):
+                pairs = getattr(attr, "supportedPairs")
+                for pair in pairs:
+                    if pair[0] == input_extension and pair[1] == output_extension:
+                        # Call the method, passing the arguments
+                        return attr(input, output, input_extension, output_extension, *args, **kwargs)
+        raise NotImplementedError(f"No conversion method found for {input_extension} -> {output_extension}")
+    
+    @classmethod
+    def hasPairProgressBar(cls, pair: Pair) -> bool:
+        """Check if any function in the converter has progress bar support for a specific pair."""
+        for attr_name in dir(cls):
+            attr = getattr(cls, attr_name)
+            if callable(attr) and hasattr(attr, "supportedPairs"):
+                pairs = getattr(attr, "supportedPairs")
+                if pair in pairs:
+                    for attr_name in dir(cls):
+                        attr = getattr(cls, attr_name)
+                        if callable(attr) and hasattr(attr, "hasProgressBar"):
+                            return attr.hasProgressBar
         return False
 
-    def getFunctionsWithProgressBar(self) -> set[str]:
-        """Get all functions with progress bar support for this converter."""
-        # For now, return all registered functions - filtering by instance can be added later
-        return set(pbRegistry.getFunctionsWithProgressBar().keys())
-
-    @abstractmethod
-    def adjConverter(self) -> "ConversionAdj":
-        pass
-
-    @abstractmethod
-    def convert(
-        self, input: Path, output: Path, input_extension: str, output_extension: str
-    ) -> None:
-        pass
-
     def pbInit(self, total: int, bar_format: str = '|{bar}| {percentage:3.0f}% [{elapsed}<{remaining}]') -> ProgressBar:
+        """
+        Initialize the progress bar.
+        """
         self.progressBar = ProgressBar(total=total, bar_format=bar_format)
         return self.progressBar

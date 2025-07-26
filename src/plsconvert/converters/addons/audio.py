@@ -1,12 +1,11 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.converters.registry import register_converter
-from plsconvert.utils.graph import ConversionAdj
-from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.converters.registry import addMethodData, registerConverter
+from plsconvert.utils.graph import PairList
 from plsconvert.utils.dependency import Dependencies, LibDependency as Lib
 
 
-@register_converter
+@registerConverter
 class spectrogramMaker(Converter):
     """
     Spectrogram maker using matplotlib.
@@ -20,10 +19,8 @@ class spectrogramMaker(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Lib("matplotlib"), Lib("scipy")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(["wav"], ["png"])
-
-    def convert(
+    @addMethodData(PairList(("wav", "png")), False)
+    def wav_to_spectrogram(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         import matplotlib.pyplot as plt
@@ -36,7 +33,7 @@ class spectrogramMaker(Converter):
         plt.savefig(output, format="png")
         plt.close()
 
-@register_converter
+@registerConverter
 class textToSpeech(Converter):
     """
     Text to speech converter using pyttsx3.
@@ -50,10 +47,8 @@ class textToSpeech(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Lib("pyttsx3")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(["txt"], ["mp3"])
-
-    def convert(
+    @addMethodData(PairList(("txt", "mp3")), False)
+    def txt_to_audio(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         import pyttsx3
@@ -65,7 +60,7 @@ class textToSpeech(Converter):
         engine.save_to_file(text, output.as_posix())
         engine.runAndWait()
 
-@register_converter
+@registerConverter
 class audioFromMidi(Converter):
     """
     Audio from midi converter using midi2audio.
@@ -79,10 +74,8 @@ class audioFromMidi(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Lib("midi2audio")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(["mid"], ["wav"])
-
-    def convert(
+    @addMethodData(PairList(("mid", "wav")), False)
+    def midi_to_audio(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         from midi2audio import FluidSynth

@@ -1,16 +1,15 @@
 from pathlib import Path
 import tempfile
 from plsconvert.converters.abstract import Converter
-from plsconvert.converters.registry import register_converter
-from plsconvert.utils.graph import ConversionAdj
-from plsconvert.utils.graph import conversionFromToAdj
+from plsconvert.converters.registry import addMethodData, registerConverter
+from plsconvert.utils.graph import PairList
 from plsconvert.utils.files import runCommand
 from plsconvert.utils.dependency import Dependencies, ToolDependency as Tool
 from plsconvert.utils.dependency import getSevenZipPath
 import platform
 
 
-@register_converter
+@registerConverter
 class tar(Converter):
     """
     Tar converter.
@@ -25,13 +24,8 @@ class tar(Converter):
         # TODO: Make gzip a Lib instead of Tool
         return Dependencies([Tool("gzip"), Tool("bzip2"), Tool("xz")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(
-            ["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"],
-            ["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"],
-        )
-
-    def convert(
+    @addMethodData(PairList.all2all(["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"], ["generic", "tar", "tar.gz", "tar.bz2", "tar.xz"]), False)
+    def tar_to_tar(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         import tarfile
@@ -68,11 +62,58 @@ class tar(Converter):
             runCommand(command)
 
 
-@register_converter
+@registerConverter
 class sevenZip(Converter):
     """
     7z converter.
     """
+    
+    # Define supported pairs as class variable cause its easier this way in this instance :P
+    _SUPPORTED_PAIRS = PairList.all2all(
+        [
+            "generic",
+            "7z",
+            "xz",
+            "bz2",
+            "gz",
+            "tar",
+            "zip",
+            "wim",
+            "apfs",
+            "ar",
+            "arj",
+            "cab",
+            "chm",
+            "cpio",
+            "cramfs",
+            "dmg",
+            "ext",
+            "fat",
+            "gpt",
+            "hfs",
+            "hex",
+            "iso",
+            "lzh",
+            "lzma",
+            "mbr",
+            "msi",
+            "nsi",
+            "ntfs",
+            "qcow2",
+            "rar",
+            "rpm",
+            "squashfs",
+            "udf",
+            "uefi",
+            "vdi",
+            "vhd",
+            "vhdx",
+            "vmdk",
+            "xar",
+            "z",
+        ],
+        ["generic", "7z", "xz", "bz2", "gz", "tar", "zip", "wim"],
+    )
     
     @property
     def name(self) -> str:
@@ -82,53 +123,6 @@ class sevenZip(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Tool("7z")])
 
-    def adjConverter(self) -> ConversionAdj:
-        return conversionFromToAdj(
-            [
-                "generic",
-                "7z",
-                "xz",
-                "bz2",
-                "gz",
-                "tar",
-                "zip",
-                "wim",
-                "apfs",
-                "ar",
-                "arj",
-                "cab",
-                "chm",
-                "cpio",
-                "cramfs",
-                "dmg",
-                "ext",
-                "fat",
-                "gpt",
-                "hfs",
-                "hex",
-                "iso",
-                "lzh",
-                "lzma",
-                "mbr",
-                "msi",
-                "nsi",
-                "ntfs",
-                "qcow2",
-                "rar",
-                "rpm",
-                "squashfs",
-                "udf",
-                "uefi",
-                "vdi",
-                "vhd",
-                "vhdx",
-                "vmdk",
-                "xar",
-                "z",
-            ],
-            ["generic", "7z", "xz", "bz2", "gz", "tar", "zip", "wim"],
-        )
-
     def _getSevenZipCommand(self) -> str:
         """Get the correct 7z command path based on platform and availability."""
         if platform.system() == "Windows":
@@ -137,7 +131,8 @@ class sevenZip(Converter):
                 return sevenzip_path
         return "7z"  # Fallback for non-Windows or if available in PATH
 
-    def convert(
+    @addMethodData(_SUPPORTED_PAIRS, False)
+    def generic_to_generic(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         sevenzip_cmd = self._getSevenZipCommand()

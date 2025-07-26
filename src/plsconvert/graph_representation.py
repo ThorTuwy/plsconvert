@@ -1,6 +1,6 @@
-from typing import List, Tuple, Optional, Any
-from plsconvert.utils.graph import ConversionAdj, Format, Conversion
-from plsconvert.converters.abstract import Converter
+from typing import Tuple, Optional, Any
+from plsconvert.utils.graph import Graph, Format
+from plsconvert.converters.registry import ConverterRegistry
 
 try:
     import matplotlib.pyplot as plt
@@ -10,45 +10,6 @@ try:
 except ImportError:
     raise ImportError("Missing dependencies for graph representation, install with: uv install plsconvert[graph] or if you cloned the repository, run: uv sync --extra graph")
 
-    
-
-def getAllConvertersAdjacency(theoretical: bool = False) -> ConversionAdj:
-    """
-    Get the adjacency dictionary from all converters.
-    
-    Args:
-        theoretical: If True, returns complete theoretical graph (all converters).
-                    If False, returns practical graph (only available converters).
-    """
-    from plsconvert.converters.universal import universalConverter
-    
-    # Get universal converter instance
-    converter = universalConverter()
-    
-    # Get the adjacency dictionary based on type requested
-    completeAdj = converter.getAdjacency(theoretical)
-    
-    return completeAdj
-
-
-def getAllFormats(adj: ConversionAdj) -> Tuple[List[str], List[Tuple[Format, Format, Converter]]]:
-    """
-    Extract all unique formats (nodes) and connections (edges) from adjacency dictionary.
-    
-    Returns:
-        Tuple containing:
-        - List of all unique format nodes
-        - List of connections as (source, target, converter) tuples
-    """
-    all_formats: set[Format] = set()
-    all_connections: list[Tuple[Format, Format, Converter]] = []
-    
-    for source, targets in adj.items():
-        all_formats.add(source)
-        for target, converter in targets:
-            all_connections.append((source, target, converter))
-    
-    return list(all_formats), all_connections
 
 class FormatGraphVisualizer:
     """
@@ -82,6 +43,14 @@ class FormatGraphVisualizer:
         for category, formats in self.selected_formats.items():
             for fmt in formats:
                 self.format_to_category[fmt] = category
+
+    def getFormatsToShow(self) -> list[Format]:
+        """Get the formats to show."""
+        if hasattr(self, '_formatsToShow'):
+            return self._formatsToShow
+        else:
+            self._formatsToShow = [format for formats in self.selected_formats.values() for format in formats]
+            return self._formatsToShow
     
     def getFormatCategory(self, formatName: str) -> str:
         """Get the category of a given format."""
@@ -92,35 +61,22 @@ class FormatGraphVisualizer:
         category = self.getFormatCategory(formatName)
         return self.category_colors.get(category, self.category_colors['other'])
     
-    def filterSelectedFormats(self, adj: ConversionAdj) -> ConversionAdj:
-        """
-        Filter the adjacency dictionary to include only selected formats.
-        """
-        allSelected: set[Format] = set()
-        for formats in self.selected_formats.values():
-            allSelected.update(formats)
-        
-        filteredAdj: ConversionAdj = ConversionAdj()
-        for source in allSelected:
-            if source in adj:
-                filteredAdj[source] = [Conversion((format, converter)) for format, converter in adj[source] if format in allSelected]
-
-        return filteredAdj
-    
-    def createNetworkxGraph(self, adj: ConversionAdj, filterSelected: bool = True):
+    def createNetworkxGraph(self, graph: Graph, filterSelected: bool = True):
         """
         Create a NetworkX directed graph from the adjacency dictionary.
         """
+        formatsToShow = self.getFormatsToShow()
+
         if filterSelected:
-            adj = self.filterSelectedFormats(adj)
+            graph = graph.hardFilter(formatsToShow)
         
         G = nx.DiGraph()
         
         allNodes = set()
-        for source, targets in adj.items():
+        for source, targets in graph.items():
             allNodes.add(source)
             for target, _ in targets:
-                allNodes.add(target)
+                allNodes.add(target[1])
         
         for node in allNodes:
             category = self.getFormatCategory(node)
@@ -133,9 +89,9 @@ class FormatGraphVisualizer:
             G.add_node(node, category=category, color=self.getFormatColor(node), community=community)
         
         # Add edges with converter information
-        for source, targets in adj.items():
+        for source, targets in graph.items():
             for target, converter in targets:
-                G.add_edge(source, target, converter=converter)
+                G.add_edge(source, target[1], converter=converter)
 
         return G
     
@@ -154,11 +110,13 @@ class FormatGraphVisualizer:
             showConverters: Whether to show converter names on edges
         """
         # Always use theoretical complete system for visualization
-        completeAdj = getAllConvertersAdjacency(theoretical=True)
+        completeGraph = ConverterRegistry.theoreticalGraph
+
+        formatsToShow = self.getFormatsToShow()
+        filteredGraph = completeGraph.hardFilter(formatsToShow)
         
         # Filter to selected formats for display
-        filteredAdj = self.filterSelectedFormats(completeAdj)
-        G = self.createNetworkxGraph(filteredAdj, filterSelected=False)
+        G = self.createNetworkxGraph(filteredGraph, filterSelected=False)
         
         # Create the plot
         plt.figure(figsize=figsize)
@@ -181,8 +139,19 @@ class FormatGraphVisualizer:
             NetGraph(
                 G, 
                 node_layout='community',
-                node_layout_kwargs={'node_to_community': nodeToCommunity},
+                node_layout_kwargs={
+                    'node_to_community': nodeToCommunity,
+                    'pad_by': 0.018
+                },
                 edge_layout='bundled',
+                edge_layout_kwargs={
+                    'k': 2000.0,  # Higher k = stronger bundling
+                    'compatibility_threshold': 0.02,  # Lower = more bundling
+                    'total_cycles': 8,  # More cycles = stronger bundling
+                    'total_iterations': 80,  # More iterations = stronger bundling
+                    'step_size': 0.06,  # Higher step size = faster convergence
+                    'straighten_by': 0.1  # Slight straightening
+                },
                 node_color=nodeColors,
                 node_size=3,
                 node_labels=True,
@@ -244,9 +213,9 @@ class FormatGraphVisualizer:
         plt.axis('off')
         
         # Add statistics legend at the bottom
-        filteredFormats, filteredConnections = getAllFormats(filteredAdj)
-        totalFormats, totalConnections = getAllFormats(completeAdj)
-        statsText = f"Showing {len(filteredFormats)}/{len(totalFormats)} formats · {len(filteredConnections)}/{len(totalConnections)} conversions"
+        filteredFormats, filteredConversions = len(self.getFormatsToShow()), len(filteredGraph.getAllConversions())
+        totalFormats, totalConversions = len(completeGraph.getAllSourceFormats()), len(completeGraph.getAllConversions())
+        statsText = f"Showing {filteredFormats}/{totalFormats} formats · {filteredConversions}/{totalConversions} conversions · {len(completeGraph.getAllConverters())} converters"
         plt.figtext(0.5, 0.02, statsText, ha='center', fontsize=10, style='italic', color='gray')
         
         # Adjust layout to prevent legend cutoff
@@ -259,12 +228,12 @@ class FormatGraphVisualizer:
         else:
             plt.show()
     
-    def analyzeGraphMetrics(self, adj: ConversionAdj) -> dict[str, Any]:
+    def analyzeGraphMetrics(self, graph: Graph) -> dict[str, Any]:
         """
         Analyze various metrics of the transformation graph.
         """
         
-        G = self.createNetworkxGraph(adj, filterSelected=True)
+        G = self.createNetworkxGraph(graph, filterSelected=True)
         metrics = {
             'total_nodes': G.number_of_nodes(),
             'total_edges': G.number_of_edges(),
@@ -298,11 +267,11 @@ class FormatGraphVisualizer:
         
         return metrics
     
-    def printGraphMetrics(self, adj: ConversionAdj):
+    def printGraphMetrics(self, graph: Graph):
         """
         Print detailed graph metrics.
         """
-        metrics = self.analyzeGraphMetrics(adj)
+        metrics = self.analyzeGraphMetrics(graph)
         
         print("Graph metrics")
         
@@ -335,21 +304,24 @@ def printAllFormatsAndConnections(theoretical: bool = False):
     
     # Get adjacency from all converters
     print("Loading all converters...")
-    completeAdj = getAllConvertersAdjacency(theoretical=theoretical)
+    completeGraph = ConverterRegistry.practicalGraph
     
     # Get all formats and connections
-    allFormats, allConnections = getAllFormats(completeAdj)
+    allFormats, allConnections = completeGraph.getAllUniqueFormats(), completeGraph.getAllConversions()
     
     graphType = "theoretical" if theoretical else "practical"
     print(f"\nSystem overview ({graphType}):")
     print(f"  Total unique formats: {len(allFormats)}")
     print(f"  Total connections: {len(allConnections)}")
     
-    converterCounts, totalCount = completeAdj.countConverters()
-    print(f"  Total converters: {totalCount}")
+    converterCounts = completeGraph.numConnectionsPerConverter()
+    print(f"  Total converters: {len(converterCounts)}")
     
+    totalConnections = sum(converterCounts.values())
     print(f"\nConverter statistics ({graphType}):")
     for converter, count in sorted(converterCounts.items(), key=lambda x: x[1], reverse=True):
         print(f"  {converter}: {count} connections")
+        totalConnections += count
+    print(f"  Total connections: {totalConnections}")
     
-    return completeAdj, allFormats, allConnections
+    return completeGraph, allFormats, allConnections

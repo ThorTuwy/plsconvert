@@ -1,10 +1,10 @@
 from pathlib import Path
 from plsconvert.converters.abstract import Converter
-from plsconvert.utils.graph import ConversionAdj, conversionFromToAdj
-from plsconvert.converters.registry import register_converter
+from plsconvert.converters.registry import addMethodData, registerConverter
 from plsconvert.utils.dependency import Dependencies, LibDependency as Lib
+from plsconvert.utils.graph import PairList
 
-@register_converter
+@registerConverter
 class threeDConverter(Converter):
     """
     Converter for 3D models.
@@ -18,26 +18,8 @@ class threeDConverter(Converter):
     def dependencies(self) -> Dependencies:
         return Dependencies([Lib("trimesh"), Lib("moderngl"), Lib("pyrr"), Lib("PIL"), Lib("imageio"), Lib("imageio_ffmpeg"), Lib("pygltflib")])
 
-    def adjConverter(self) -> ConversionAdj:
-        model_conversion = conversionFromToAdj(
-            ["glb", "gltf", "obj"],
-            ["glb", "gltf", "obj"]
-        )
-        video_conversion = conversionFromToAdj(
-            ["glb", "gltf", "obj"],
-            ["mp4"]
-        )
-        image_conversion = conversionFromToAdj(
-            ["glb", "gltf", "obj"],
-            ["png"]
-        )
-        gif_conversion = conversionFromToAdj(
-            ["glb", "gltf", "obj"],
-            ["gif"]
-        )
-        return model_conversion + video_conversion + image_conversion + gif_conversion
-
-    def convert(
+    @addMethodData(PairList.all2all(["glb", "gltf", "obj"], ["glb", "gltf", "obj", "mp4", "png", "gif"]), False)
+    def model_to_frames(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         if output_extension == "mp4":

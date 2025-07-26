@@ -13,12 +13,12 @@ from .addons import audio, docs, ai, braille, media, compression, configs, three
 
 # Export the main classes
 from .abstract import Converter
-from .registry import ConverterRegistry, register_converter
+from .registry import ConverterRegistry, registerConverter
 from .universal import universalConverter
 
 __all__ = [
     "Converter",
     "ConverterRegistry", 
-    "register_converter",
+    "registerConverter",
     "universalConverter"
 ] 

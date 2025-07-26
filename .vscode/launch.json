@@ -51,6 +51,18 @@
             "python": "${workspaceFolder}/.venv/Scripts/python.exe",
             "justMyCode": false,
             "stopOnEntry": false
+        },
+        {
+            "name": "Debug plsconvert test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["./test/tfg.pdf", "./test/tfg.png"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
         }
     ]
 }
