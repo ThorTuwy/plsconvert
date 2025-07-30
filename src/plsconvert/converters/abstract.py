@@ -59,7 +59,7 @@ class Converter(ABC):
                             pair=pair,
                             conversionData=ConversionData(
                                 converter=self,
-                                method=attr,
+                                methodName=attr_name,
                                 hasProgressBar=getattr(attr, "hasProgressBar", False),
                             )
                         )
@@ -70,15 +70,10 @@ class Converter(ABC):
     def convert(self, input: Path, output: Path, input_extension: str, output_extension: str, *args, **kwargs) -> None:
         """
         Dispatch conversion to the appropriate method based on input and output extensions.
-        """
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if callable(attr) and hasattr(attr, "supportedPairs"):
-                pairs = getattr(attr, "supportedPairs")
-                for pair in pairs:
-                    if pair[0] == input_extension and pair[1] == output_extension:
-                        # Call the method, passing the arguments
-                        return attr(input, output, input_extension, output_extension, *args, **kwargs)
+        """ 
+        conversions = self.localGraph[input_extension].findByOutput(output_extension)
+        for conversion in conversions:
+            return getattr(self, conversion.methodName)(input, output, input_extension, output_extension, *args, **kwargs)
         raise NotImplementedError(f"No conversion method found for {input_extension} -> {output_extension}")
     
     @classmethod

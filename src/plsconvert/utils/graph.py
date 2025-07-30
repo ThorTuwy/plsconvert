@@ -48,10 +48,11 @@ class ConversionData(dict[str, "str | Converter | bool"]):
     """
     A dictionary of conversion data.
     """
-    def __init__(self, converter: "Converter", progressBar: bool = False, **kwargs):
+    def __init__(self, converter: "Converter", methodName: str, hasProgressBar: bool = False, **kwargs):
         super().__init__(**kwargs)
         self["converter"] = converter
-        self["progressBar"] = progressBar
+        self["methodName"] = methodName
+        self["hasProgressBar"] = hasProgressBar
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -64,12 +65,20 @@ class ConversionData(dict[str, "str | Converter | bool"]):
         self["converter"] = converter
 
     @property
-    def progressBar(self) -> bool:
-        return self["progressBar"]  # type: ignore
+    def hasProgressBar(self) -> bool:
+        return self["hasProgressBar"]  # type: ignore
 
-    @progressBar.setter
-    def progressBar(self, progressBar: bool):
-        self["progressBar"] = progressBar
+    @hasProgressBar.setter
+    def hasProgressBar(self, hasProgressBar: bool):
+        self["hasProgressBar"] = hasProgressBar
+
+    @property
+    def methodName(self) -> str:
+        return self["methodName"]  # type: ignore
+    
+    @methodName.setter
+    def methodName(self, methodName: str):
+        self["methodName"] = methodName
 
 
 class Conversion(tuple[Pair, ConversionData]):
@@ -94,6 +103,10 @@ class Conversion(tuple[Pair, ConversionData]):
     @property
     def converter(self) -> "Converter":
         return self[1].converter
+    
+    @property
+    def methodName(self) -> str:
+        return self[1].methodName
 
 
 class ConversionList(list[Conversion]):
