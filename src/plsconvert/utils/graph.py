@@ -100,10 +100,14 @@ class ConversionList(list[Conversion]):
     """
     A list of conversions.
     """
-    def __init__(self, *args: Conversion):
+    def __init__(self, *args: list[Conversion] | Conversion):
         super().__init__()
         for arg in args:
-            self.append(arg)
+            if isinstance(arg, list):
+                for conversion in arg:
+                    self.append(conversion)
+            else:
+                self.append(arg)
 
     def findByPair(self, pair: Pair) -> "ConversionList":
         return ConversionList(
@@ -180,11 +184,11 @@ class Graph(dict[Format, ConversionList]):
         """
         return list(set([conversion.output for conversionList in self.values() for conversion in conversionList]))
     
-    def getAllConversions(self) -> list[Conversion]:
+    def getAllConversions(self) -> "ConversionList":
         """
         Get all conversions in the graph.
         """
-        return [conversion for conversionList in self.values() for conversion in conversionList]
+        return ConversionList([conversion for conversionList in self.values() for conversion in conversionList])
 
     def numConnectionsPerConverter(self) -> dict[str, int]:
         """
