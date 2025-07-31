@@ -1,18 +1,27 @@
 from plsconvert.converters.abstract import Converter
+from plsconvert.converters.registry import addMethodData, registerConverter
+from plsconvert.utils.graph import PairList
 from pathlib import Path
 
-from plsconvert.utils.graph import conversionFromToAdj
-from plsconvert.utils.dependency import checkLibsDependencies
+from plsconvert.utils.dependency import Dependencies, LibDependency as Lib
 
 
+@registerConverter
 class configParser(Converter):
-    def adjConverter(self) -> dict[str, list[list[str]]]:
-        return conversionFromToAdj(
-            ["json", "toml", "yaml", "ini"],
-            ["json", "toml", "yaml", "ini"],
-        )
+    """
+    Config translator using tomlkit, yaml and configparser.
+    """
 
-    def convert(
+    @property
+    def name(self) -> str:
+        return "Config Translator"
+
+    @property
+    def dependencies(self) -> Dependencies:
+        return Dependencies([Lib("tomlkit"), Lib("yaml"), Lib("configparser")])
+
+    @addMethodData(PairList.all2all(["json", "toml", "yaml", "ini"], ["json", "toml", "yaml", "ini"]), False)
+    def config_to_config(
         self, input: Path, output: Path, input_extension: str, output_extension: str
     ) -> None:
         import json
@@ -34,10 +43,12 @@ class configParser(Converter):
             config.read(input)
             data = {section: dict(config[section]) for section in config.sections()}
 
+        if not isinstance(data, dict): # type: ignore
+            raise ValueError(f"Failed to load data from {input}")
+
         if output_extension == "json":
             with open(output, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4)
-
         elif output_extension == "toml":
             with open(output, "w", encoding="utf-8") as f:
                 tomlkit.dump(data, f)
@@ -54,6 +65,3 @@ class configParser(Converter):
                 config[section] = values
             with open(output, "w", encoding="utf-8") as f:
                 config.write(f)
-
-    def metDependencies(self) -> bool:
-        return checkLibsDependencies(["tomlkit", "yaml"])

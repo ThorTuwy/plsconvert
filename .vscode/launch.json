@@ -1,0 +1,68 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug plsconvert --graph",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["--graph"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug plsconvert -d",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["-d"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug plsconvert --version",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["--version"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug plsconvert --graph info",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["--graph", "info"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug plsconvert test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.vscode/debug_runner.py",
+            "args": ["./test/tfg.pdf", "./test/tfg.png"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "justMyCode": false,
+            "stopOnEntry": false
+        }
+    ]
+}
