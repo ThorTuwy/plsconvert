@@ -5,6 +5,7 @@ import warnings
 from plsconvert.converters.registry import ConverterRegistry
 from halo import Halo
 from plsconvert.utils.errors import OutputFileNotFoundError
+import shutil
 
 class universalConverter:
     """Universal converter that uses the centralized registry to access all available converters."""
@@ -33,8 +34,8 @@ class universalConverter:
         """
         if not tempOutput.exists():
             raise OutputFileNotFoundError(f"Temp output file {tempOutput} not found. Conversion may have failed.")
-        
-        tempOutput.replace(output)
+
+        shutil.move(tempOutput, output)
         if not output.exists():
             raise OutputFileNotFoundError(f"Output file {output} not found. Transfer may have failed.")
         
@@ -103,6 +104,3 @@ class universalConverter:
             print(f"Error: {e}. Please ensure the input file exists.", file=sys.stderr)
             sys.exit(1)
 
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}", file=sys.stderr)
-            sys.exit(1)
