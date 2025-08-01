@@ -4,6 +4,8 @@ import sys
 import warnings
 from plsconvert.converters.registry import ConverterRegistry
 from halo import Halo
+from plsconvert.utils.errors import OutputFileNotFoundError
+import shutil
 
 class universalConverter:
     """Universal converter that uses the centralized registry to access all available converters."""
@@ -24,6 +26,20 @@ class universalConverter:
                     spinner.succeed()
                 else:
                     spinner.fail()
+
+    @staticmethod
+    def save(tempOutput: Path, output: Path) -> Path:
+        """
+        Save the conversion result to the output file.
+        """
+        if not tempOutput.exists():
+            raise OutputFileNotFoundError(f"Temp output file {tempOutput} not found. Conversion may have failed.")
+
+        shutil.move(tempOutput, output)
+        if not output.exists():
+            raise OutputFileNotFoundError(f"Output file {output} not found. Transfer may have failed.")
+        
+        return output
 
     def convert(
         self, input: Path, output: Path, input_extension: str, output_extension: str
@@ -78,9 +94,13 @@ class universalConverter:
                     input = temp_output
                     input_extension = conversion.output
 
+                universalConverter.save(input, output)
+
+        except OutputFileNotFoundError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+
         except FileNotFoundError as e:
             print(f"Error: {e}. Please ensure the input file exists.", file=sys.stderr)
             sys.exit(1)
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}", file=sys.stderr)
-            sys.exit(1)
+
